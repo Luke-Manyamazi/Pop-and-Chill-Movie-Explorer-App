@@ -43,3 +43,34 @@ npm install
 
 # Run development server
 npm run dev
+
+```
+
+## 🔮 Future Improvements
+
+This project will be constantly improved until all the necessary features are added.
+Some planned improvements include:
+
+⭐ User authentication (sign up, login)
+❤️ Save favorites and create watchlists
+📝 User reviews and ratings
+🌍 Multi-language support
+🎭 Advanced filtering (genre, year, rating)
+📊 Analytics dashboard for trending insights
+
+## 📚 Acknowledgements
+
+TMDB API - for providing the movie and TV data
+Vite - for the fast build tool
+Tailwind CSS - for styling
+Netlify - for easy deployment
+
+## 📝 License
+
+This project is for educational purposes and personal learning.
+You are free to fork and modify it, but please acknowledge TMDB API when using movie/TV data.
+
+## 👨‍💻 Author
+
+Pop & Chill – Movie Explorer App
+Created by Luke Manyamazi

@@ -84,7 +84,7 @@ export default function TVDetails() {
           {episodes.map(ep => (
             <div key={ep.id} className="bg-neutral-900/60 rounded-xl overflow-hidden">
               <img src={img342(ep.still_path)} alt={ep.name} className="w-full h-40 object-cover" />
-              <div className="p-2 text-white">
+              <div className="p-2 text-black">
                 <h3 className="font-semibold text-sm line-clamp-1">{ep.name}</h3>
                 <p className="text-xs text-neutral-400">Season {ep.season_number}, Ep {ep.episode_number}</p>
               </div>

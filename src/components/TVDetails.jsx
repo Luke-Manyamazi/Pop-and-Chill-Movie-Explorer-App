@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getTVDetails, getCredits, getTVEpisodes, getVideos, pickYouTubeTrailer, img342 } from '../api/tmdb';
 import TrailerModal from './TrailerModal';
-import { useNavigate } from 'react-router-dom';
+
 
 const navigate = useNavigate();
 

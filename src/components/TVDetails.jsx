@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getTVDetails, getCredits, getTVEpisodes, getVideos, pickYouTubeTrailer, img342 } from '../api/tmdb';
 import TrailerModal from './TrailerModal';
 
@@ -12,7 +12,7 @@ export default function TVDetails() {
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [youTubeKey, setYouTubeKey] = useState(null);
-  const navigate = useNavigate();
+  
 
   useEffect(() => {
     async function fetchData() {
@@ -58,13 +58,7 @@ export default function TVDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <button
-  onClick={() => navigate(-1)}
-  className="mb-6 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg shadow"
->
-  ← Back to TV Shows
-</button>
-      {/* TV Header */}
+     {/* TV Header */}
       <div className="flex flex-col sm:flex-row gap-6">
         <img
           src={img342(tv.poster_path)}

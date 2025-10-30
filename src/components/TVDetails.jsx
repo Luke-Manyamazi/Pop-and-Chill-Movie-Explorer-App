@@ -3,9 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getTVDetails, getCredits, getTVEpisodes, getVideos, pickYouTubeTrailer, img342 } from '../api/tmdb';
 import TrailerModal from './TrailerModal';
 
-
-const navigate = useNavigate();
-
 export default function TVDetails() {
   const { id } = useParams();
   const [tv, setTV] = useState(null);
@@ -15,6 +12,7 @@ export default function TVDetails() {
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [youTubeKey, setYouTubeKey] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {

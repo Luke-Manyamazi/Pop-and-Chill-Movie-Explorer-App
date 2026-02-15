@@ -23,17 +23,12 @@ Built with **The Movie Database (TMDB) API**, it provides an interactive, modern
 
 ---
 
-## 📸 Screenshots (Optional)
-_Add some screenshots or GIFs of your app here after deployment._
-
----
-
 ## ⚙️ Installation & Setup
 Clone the repository and run locally:
 
 ```bash
 # Clone repo
-git clone https://github.com/your-username/pop-and-chill.git
+git clone https://github.com/luke-manyamazi/pop-and-chill.git
 
 # Go to project folder
 cd pop-and-chill

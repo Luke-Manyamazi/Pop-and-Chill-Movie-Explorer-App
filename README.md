@@ -28,10 +28,7 @@ Clone the repository and run locally:
 
 ```bash
 # Clone repo
-git clone https://github.com/luke-manyamazi/pop-and-chill.git
-
-# Go to project folder
-cd pop-and-chill
+git clone https://github.com/Luke-Manyamazi/Pop-and-Chill-Movie-Explorer-App.git
 
 # Install dependencies
 npm install

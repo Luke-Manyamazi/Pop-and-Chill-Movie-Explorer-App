@@ -1,18 +1,27 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { getTrending, searchMulti, getVideos, pickYouTubeTrailer } from './api/tmdb';
+import { getTrending, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
 import TrailerModal from '../src/components/TrailerModal';
 import MovieDetails from '../src/components/MovieDetails';
 import TVDetails from '../src/components/TVDetails';
+import EpisodeDetails from '../src/components/EpisodeDetails';
+import ActorDetails from '../src/components/ActorDetails';
+import Watchlist from '../src/components/Watchlist';
+import ErrorBoundary from '../src/components/ErrorBoundary';
+import Nav from '../src/components/Nav';
+import FilterBar from '../src/components/FilterBar';
+import { SkeletonGrid } from '../src/components/SkeletonCard';
 
 function AppMain() {
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [items, setItems] = useState([]);
   const [error, setError] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [discoverParams, setDiscoverParams] = useState(null);
   const [heroBackground, setHeroBackground] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -35,6 +44,7 @@ function AppMain() {
       setItems(prev => append ? [...prev, ...(data.results || [])] : (data.results || []));
       setPage(p);
       setActiveCategory(category);
+      if (!append) setDiscoverParams(null);
       if (!append) setHeroBackground(getRandomBackdrop(data.results));
       return data;
     } catch (e) {
@@ -62,9 +72,39 @@ function AppMain() {
     }
   }, [query, hasQuery, loadTrending, getRandomBackdrop]);
 
+  const loadDiscover = useCallback(async (media, params, p = 1, append = false) => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getDiscover(media, params, p);
+      setItems(prev => append ? [...prev, ...(data.results || [])] : (data.results || []));
+      setPage(p);
+      setActiveCategory(media);
+      setDiscoverParams(params);
+      if (!append) setHeroBackground(getRandomBackdrop(data.results));
+      return data;
+    } catch (e) {
+      setError(String(e.message || e));
+    } finally {
+      setLoading(false);
+    }
+  }, [getRandomBackdrop]);
+
   useEffect(() => {
     loadTrending();
   }, [loadTrending]);
+
+  useEffect(() => {
+    if (location.state?.category) loadTrending(location.state.category);
+  }, [location.state, loadTrending]);
+
+  // Auto-search as the user types, paused while they're mid-keystroke
+  useEffect(() => {
+    if (!hasQuery) return;
+    const t = setTimeout(() => runSearch(1), 500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -92,20 +132,13 @@ function AppMain() {
     const callback = () => window.scrollTo({ top: previousHeight, behavior: 'smooth' });
 
     if (activeCategory === 'search') runSearch(nextPage, true).then(callback);
+    else if (discoverParams) loadDiscover(activeCategory, discoverParams, nextPage, true).then(callback);
     else loadTrending(activeCategory, nextPage, true).then(callback);
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Nav */}
-      <nav className="w-full flex flex-col sm:flex-row items-center sm:justify-between py-4 border-b border-white/10 gap-4 sm:gap-0 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight hover:cursor-pointer" onClick={() => loadTrending('all')}>🍿 Pop & Chill Mate  |  Movie Explorer</h1>
-        <ul className="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6 text-sm sm:text-base">
-          <li><button onClick={() => loadTrending('movie')} className="hover:text-teal-400">Movies</button></li>
-          <li><button onClick={() => loadTrending('tv')} className="hover:text-teal-400">TV Shows</button></li>
-          <li><button onClick={() => loadTrending('person')} className="hover:text-teal-400">Actors</button></li>
-        </ul>
-      </nav>
+      <Nav />
 
       {/* Hero */}
       <section className="w-full text-center py-32 px-4 sm:px-8 bg-cover bg-center relative transition-all duration-700 ease-in-out" style={{ backgroundImage: heroBackground ? `url(${heroBackground})` : 'linear-gradient(to right, #0ea5e9, #14b8a6)' }}>
@@ -126,12 +159,21 @@ function AppMain() {
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {(activeCategory === 'movie' || activeCategory === 'tv') && (
+          <FilterBar
+            key={activeCategory}
+            media={activeCategory}
+            active={!!discoverParams}
+            onApply={(params) => loadDiscover(activeCategory, params, 1)}
+            onClear={() => loadTrending(activeCategory)}
+          />
+        )}
         <section className="py-10">
           {/* Display error */}
           {error && <p className="text-center py-4 text-red-500">{error}</p>}
 
           {loading && page === 1 ? (
-            <div className="grid place-items-center py-12"><span className="loader" /></div>
+            <SkeletonGrid />
           ) : items.length === 0 ? (
             <p className="text-center py-12 text-white/70">No results found.</p>
           ) : (
@@ -173,11 +215,16 @@ function AppMain() {
 export default function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<AppMain />} />
-        <Route path="/movie/:id" element={<MovieDetails />} />
-        <Route path="/tv/:id" element={<TVDetails />} />
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<AppMain />} />
+          <Route path="/movie/:id" element={<MovieDetails />} />
+          <Route path="/tv/:id" element={<TVDetails />} />
+          <Route path="/tv/:id/season/:season/episode/:episode" element={<EpisodeDetails />} />
+          <Route path="/actor/:id" element={<ActorDetails />} />
+          <Route path="/watchlist" element={<Watchlist />} />
+        </Routes>
+      </ErrorBoundary>
     </Router>
   );
 }

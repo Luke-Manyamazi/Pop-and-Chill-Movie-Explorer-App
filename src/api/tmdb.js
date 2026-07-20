@@ -6,14 +6,23 @@ export const img780 = (path) => (path ? `${IMG_BASE}w780${path}` : null);
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const cache = new Map();
+
 async function get(path, params = {}) {
   const url = new URL(API_BASE + path);
   url.searchParams.set('api_key', API_KEY);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
+  const key = url.toString();
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data;
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`TMDb ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  cache.set(key, { data, ts: Date.now() });
+  return data;
 }
 
 // Trending
@@ -41,6 +50,31 @@ export const getTVCredits = (id) => get(`/tv/${id}/credits`);
 
 // Fetch TV show episodes
 export const getTVEpisodes = (id, season) => get(`/tv/${id}/season/${season}`);
+
+// Fetch a single episode's full details (overview, guest stars, crew)
+export const getEpisodeDetails = (id, season, episode) =>
+  get(`/tv/${id}/season/${season}/episode/${episode}`);
+
+// Recommendations & similar titles
+export const getRecommendations = (media, id, page = 1) =>
+  get(`/${media}/${id}/recommendations`, { page });
+export const getSimilar = (media, id, page = 1) =>
+  get(`/${media}/${id}/similar`, { page });
+
+// Where to watch (streaming/rent/buy providers by region)
+export const getWatchProviders = (media, id) =>
+  get(`/${media}/${id}/watch/providers`);
+
+// Genres (for discover filters)
+export const getGenres = (media) => get(`/genre/${media}/list`);
+
+// Discover with filters (genre, year, min rating, sort)
+export const getDiscover = (media, params = {}, page = 1) =>
+  get(`/discover/${media}`, { page, ...params });
+
+// Person (actor) details & combined credits
+export const getPersonDetails = (id) => get(`/person/${id}`);
+export const getPersonCombinedCredits = (id) => get(`/person/${id}/combined_credits`);
 
 // Pick a YouTube trailer key
 export function pickYouTubeTrailer(videos) {

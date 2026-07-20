@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { img342 } from '../api/tmdb';
+import WatchlistButton from './WatchlistButton';
 
 export default function MovieCard({ item, onTrailer }) {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function MovieCard({ item, onTrailer }) {
         className="w-full aspect-[2/3] bg-neutral-800 cursor-pointer"
         onClick={openDetails}
       >
+        {!isActor && <WatchlistButton item={item} />}
         {img ? (
           <img
             src={img}

@@ -34,6 +34,11 @@ export default function Nav() {
             Actors
           </button>
         </li>
+        <li>
+          <button onClick={() => navigate('/watchlist')} className="hover:text-teal-400">
+            My List
+          </button>
+        </li>
       </ul>
     </nav>
   );

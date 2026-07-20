@@ -9,6 +9,9 @@ import {
 } from "../api/tmdb";
 import TrailerModal from "./TrailerModal";
 import Nav from "./Nav";
+import WatchlistButton from "./WatchlistButton";
+import WatchProviders from "./WatchProviders";
+import RecommendedRow from "./RecommendedRow";
 
 export default function MovieDetails() {
   const { id } = useParams();
@@ -28,7 +31,7 @@ export default function MovieDetails() {
         setMovie(details);
         const credits = await getCredits("movie", id);
         setCast(credits.cast || []);
-      } catch (e) {
+      } catch {
         setError("Details not found. Check if this is a TV show.");
       } finally {
         setLoading(false);
@@ -48,6 +51,16 @@ export default function MovieDetails() {
       setYouTubeKey(null);
       setModalOpen(true);
     }
+  }
+
+  async function openTrailerFor(item) {
+    try {
+      const videos = await getVideos(item.media_type, item.id);
+      setYouTubeKey(pickYouTubeTrailer(videos));
+    } catch {
+      setYouTubeKey(null);
+    }
+    setModalOpen(true);
   }
 
   if (loading)
@@ -86,12 +99,16 @@ export default function MovieDetails() {
             <p className="text-lg text-neutral-300 leading-relaxed mb-8">
               {movie.overview}
             </p>
-            <button
-              onClick={openTrailer}
-              className="px-8 py-3 rounded-xl bg-teal-500 hover:bg-teal-600 font-bold transition-transform active:scale-95"
-            >
-              Watch Trailer
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={openTrailer}
+                className="px-8 py-3 rounded-xl bg-teal-500 hover:bg-teal-600 font-bold transition-transform active:scale-95"
+              >
+                Watch Trailer
+              </button>
+              <WatchlistButton item={{ ...movie, media_type: 'movie' }} variant="inline" />
+            </div>
+            <WatchProviders media="movie" id={id} />
           </div>
         </div>
 
@@ -124,6 +141,8 @@ export default function MovieDetails() {
             ))}
           </div>
         </section>
+
+        <RecommendedRow media="movie" id={id} onTrailer={openTrailerFor} />
       </div>
 
       <TrailerModal

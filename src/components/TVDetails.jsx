@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getTVDetails,
   getTVEpisodes,
@@ -10,12 +10,18 @@ import {
 } from "../api/tmdb";
 import TrailerModal from "./TrailerModal";
 import Nav from "./Nav";
+import WatchlistButton from "./WatchlistButton";
+import WatchProviders from "./WatchProviders";
+import RecommendedRow from "./RecommendedRow";
 
 export default function TVDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [tv, setTV] = useState(null);
   const [cast, setCast] = useState([]);
   const [episodes, setEpisodes] = useState([]);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [episodesLoading, setEpisodesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,18 +38,13 @@ export default function TVDetails() {
         const credits = await getTVCredits(id);
         setCast(credits.cast || []);
 
-        let allEpisodes = [];
-        // Only fetch first season by default to prevent massive API spam/slowdown
-        // or loop through existing seasons safely
-        if (details.seasons && details.seasons.length > 0) {
-          const seasonOne = await getTVEpisodes(
-            id,
-            details.seasons[0].season_number,
-          );
-          allEpisodes = seasonOne.episodes || [];
+        const firstSeason = details.seasons?.find(s => s.season_number > 0) || details.seasons?.[0];
+        if (firstSeason) {
+          setSelectedSeason(firstSeason.season_number);
+          const seasonData = await getTVEpisodes(id, firstSeason.season_number);
+          setEpisodes(seasonData.episodes || []);
         }
-        setEpisodes(allEpisodes);
-      } catch (e) {
+      } catch {
         setError("Could not load TV details. This might be a movie ID.");
       } finally {
         setLoading(false);
@@ -51,6 +52,19 @@ export default function TVDetails() {
     }
     fetchData();
   }, [id]);
+
+  async function onSeasonChange(seasonNumber) {
+    setSelectedSeason(Number(seasonNumber));
+    setEpisodesLoading(true);
+    try {
+      const seasonData = await getTVEpisodes(id, seasonNumber);
+      setEpisodes(seasonData.episodes || []);
+    } catch {
+      setEpisodes([]);
+    } finally {
+      setEpisodesLoading(false);
+    }
+  }
 
   async function openTrailer() {
     if (!tv) return;
@@ -63,6 +77,16 @@ export default function TVDetails() {
       setYouTubeKey(null);
       setModalOpen(true);
     }
+  }
+
+  async function openTrailerFor(item) {
+    try {
+      const videos = await getVideos(item.media_type, item.id);
+      setYouTubeKey(pickYouTubeTrailer(videos));
+    } catch {
+      setYouTubeKey(null);
+    }
+    setModalOpen(true);
   }
 
   if (loading)
@@ -101,54 +125,75 @@ export default function TVDetails() {
             <p className="text-lg text-neutral-300 leading-relaxed mb-8">
               {tv.overview || "No overview available."}
             </p>
-            <button
-              onClick={openTrailer}
-              className="px-8 py-3 rounded-xl bg-teal-500 hover:bg-teal-600 font-bold transition-transform active:scale-95"
-            >
-              Watch Trailer
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={openTrailer}
+                className="px-8 py-3 rounded-xl bg-teal-500 hover:bg-teal-600 font-bold transition-transform active:scale-95"
+              >
+                Watch Trailer
+              </button>
+              <WatchlistButton item={{ ...tv, media_type: 'tv' }} variant="inline" />
+            </div>
+            <WatchProviders media="tv" id={id} />
           </div>
         </div>
 
         {/* Episodes Section */}
         <section className="mt-16">
-          <h2 className="text-2xl font-bold mb-6 border-l-4 border-teal-500 pl-4">
-            Episodes (Season 1)
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {episodes.map((ep) => (
-              <div
-                key={ep.id}
-                className="bg-neutral-800/50 rounded-xl overflow-hidden border border-white/5 hover:border-teal-500/50 transition-colors"
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+            <h2 className="text-2xl font-bold border-l-4 border-teal-500 pl-4">
+              Episodes
+            </h2>
+            {tv.seasons?.length > 1 && (
+              <select
+                value={selectedSeason}
+                onChange={(e) => onSeasonChange(e.target.value)}
+                className="bg-neutral-800 text-white text-sm rounded-lg px-3 py-2 border border-white/10"
               >
-                <div className="aspect-video relative bg-neutral-800">
-                  {ep.still_path ? (
-                    <img
-                      src={img342(ep.still_path)}
-                      alt={ep.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="grid place-items-center h-full text-xs text-neutral-500">
-                      No Image
+                {tv.seasons.filter(s => s.season_number > 0 || s.episode_count > 0).map((s) => (
+                  <option key={s.id} value={s.season_number}>{s.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+          {episodesLoading ? (
+            <div className="grid place-items-center py-12"><span className="loader" /></div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {episodes.map((ep) => (
+                <div
+                  key={ep.id}
+                  onClick={() => navigate(`/tv/${id}/season/${selectedSeason}/episode/${ep.episode_number}`)}
+                  className="bg-neutral-800/50 rounded-xl overflow-hidden border border-white/5 hover:border-teal-500/50 transition-colors cursor-pointer"
+                >
+                  <div className="aspect-video relative bg-neutral-800">
+                    {ep.still_path ? (
+                      <img
+                        src={img342(ep.still_path)}
+                        alt={ep.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="grid place-items-center h-full text-xs text-neutral-500">
+                        No Image
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs">
+                      EP {ep.episode_number}
                     </div>
-                  )}
-                  <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs">
-                    EP {ep.episode_number}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-white line-clamp-1">
+                      {ep.name}
+                    </h3>
+                    <p className="text-xs text-neutral-400 mt-1 line-clamp-2">
+                      {ep.overview || "No description."}
+                    </p>
                   </div>
                 </div>
-                <div className="p-4">
-                  {/* FIXED COLOR: text-white instead of text-black */}
-                  <h3 className="font-semibold text-white line-clamp-1">
-                    {ep.name}
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-1 line-clamp-2">
-                    {ep.overview || "No description."}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Cast Section */}
@@ -177,6 +222,8 @@ export default function TVDetails() {
             ))}
           </div>
         </section>
+
+        <RecommendedRow media="tv" id={id} onTrailer={openTrailerFor} />
       </div>
 
       <TrailerModal

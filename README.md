@@ -1,86 +1,85 @@
-# 🎬 Pop & Chill – Movie Explorer App
+# Pop & Chill — Movie Explorer
 
-Pop & Chill is a **React + Vite + Tailwind CSS** web application that lets you discover movies and TV shows, get personalized recommendations, see where to stream them, and dig into full details down to the episode level.
+A responsive React application for discovering movies and TV shows, exploring detailed metadata, finding streaming options, and getting recommendations through **The Movie Database (TMDB) API**.
 
-Built with **The Movie Database (TMDB) API**, it's grown from a simple browser into an actual movie/TV suggester.
+## What it does
 
----
+- Search movies, TV shows, and people
+- Browse trending and popular titles
+- Filter discoveries by genre, year, rating, and sort order
+- Explore recommendations and similar titles
+- View regional streaming, rental, and purchase providers
+- Save a personal watchlist locally without an account
+- Watch trailers in-app
+- Explore cast, ratings, release information, and biographies
+- Browse TV seasons and individual episodes
+- Handle loading and runtime errors gracefully
+- Cache API responses to reduce unnecessary requests
+- Provide a responsive mobile-friendly interface
 
-## 🚀 Features
-- 🔍 **Search** movies, TV shows, and people — auto-updates as you type
-- 📺 **Browse trending** movies, TV shows, and popular people
-- 🎯 **Discover filters** — narrow down by genre, year, minimum rating, and sort order
-- 🤝 **Recommendations** — "You Might Also Like" on every movie/TV page, based on TMDB's recommendation and similar-titles data
-- 📡 **Where to Watch** — streaming, rental, and purchase providers for your region
-- ⭐ **Personal Watchlist** — bookmark anything with one click, saved locally in your browser (no account needed)
-- 🎞 **Watch trailers** directly in a modal
-- 📖 **Full details** — cast, ratings, release info, and biographies for actors
-- 📺 **TV season & episode browsing** — pick a season and open a full episode page (overview, air date, guest stars, crew, prev/next navigation)
-- 💀 **Skeleton loading states** and a crash-safe error boundary
-- ⚡ Response caching to avoid re-fetching the same TMDB data
-- 📱 **Responsive design** powered by Tailwind CSS
+## Tech Stack
 
----
-
-## 🛠 Tech Stack
-- **Frontend:** React 19, React Router 7, Vite 7, Tailwind CSS 4
-- **API:** [The Movie Database (TMDB)](https://www.themoviedb.org/)
+- **Frontend:** React 19, React Router 7
+- **Build:** Vite 7
+- **Styling:** Tailwind CSS 4
+- **Data:** TMDB API
 - **Deployment:** Netlify
 
----
+## Getting Started
 
-## ⚙️ Installation & Setup
-Clone the repository and run locally:
+### Prerequisites
+
+- Node.js
+- npm
+- A TMDB API key
+
+### Installation
 
 ```bash
-# Clone repo
 git clone https://github.com/Luke-Manyamazi/Pop-and-Chill-Movie-Explorer-App.git
-
-# Install dependencies
+cd Pop-and-Chill-Movie-Explorer-App
 npm install
 ```
 
-Create a `.env` file in the project root with your TMDB API key
-(get one free at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api)):
+Create `.env` in the project root:
 
-```
+```env
 VITE_TMDB_API_KEY=your_tmdb_api_key_here
 ```
 
-Then start the dev server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-If deploying (e.g. to Netlify), make sure `VITE_TMDB_API_KEY` is also set as an environment variable in your hosting provider's build settings — it isn't committed to the repo.
+Build for production:
 
-## 🔮 Future Improvements
+```bash
+npm run build
+```
 
-This project will be constantly improved until all the necessary features are added.
-Some planned improvements include:
+> Keep API credentials in environment variables. Do not commit `.env` files or real secrets to the repository.
 
-⭐ User authentication (sign up, login) — so the watchlist syncs across devices instead of living in one browser
+## Project Highlights
 
-📝 User reviews and ratings
+This project demonstrates practical frontend engineering around a third-party API: data fetching and caching, client-side routing, responsive UI, filtering, recommendation flows, local persistence, error handling, and detailed media exploration.
 
-🌍 Multi-language support
+## Roadmap
 
-📊 Analytics dashboard for trending insights
+- Account-based watchlists synced across devices
+- User reviews and ratings
+- Multi-language support
+- Analytics for discovery and trending insights
 
-## 📚 Acknowledgements
+## Credits
 
-- TMDB API - for providing the movie and TV data
-- Vite - for the fast build tool
-- Tailwind CSS - for styling
-- Netlify - for easy deployment
+Movie and TV metadata is provided by **TMDB**. This product is not endorsed or certified by TMDB.
 
-## 📝 License
+## Author
 
-This project is for educational purposes and personal learning.
-You are free to fork and modify it, but please acknowledge TMDB API when using movie/TV data.
+Built by **Luke Manyamazi**.
 
-## 👨‍💻 Author
+## License
 
-- Pop & Chill – Movie Explorer App
-- Created by Luke Manyamazi
+Educational and personal project. See repository history and project files for applicable usage terms.

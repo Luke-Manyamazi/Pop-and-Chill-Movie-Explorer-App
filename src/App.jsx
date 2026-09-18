@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import SignInPage from './pages/SignIn.jsx';
+import SignUpPage from './pages/SignUp.jsx';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { getTrending, getPopular, getTopRated, getUpcomingMovies, getRandomPopular, searchMulti, getDiscover, getVideos, pickYouTubeTrailer, getPersonDetails } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
@@ -611,6 +613,8 @@ export default function App() {
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<AppMain />} />
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/movie/:id" element={<MovieDetails />} />
           <Route path="/tv/:id" element={<TVDetails />} />
           <Route path="/tv/:id/season/:season/episode/:episode" element={<EpisodeDetails />} />

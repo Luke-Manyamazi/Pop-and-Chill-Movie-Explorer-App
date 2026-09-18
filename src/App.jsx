@@ -14,6 +14,7 @@ import ErrorBoundary from '../src/components/ErrorBoundary';
 import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
 import { SkeletonGrid } from '../src/components/SkeletonCard';
+import { UserProfile } from '@clerk/react';
 
 function ContentRow({ title, items, onTrailer, onExplore, showArrows = false }) {
   const rowRef = useRef(null);
@@ -615,6 +616,52 @@ export default function App() {
           <Route path="/" element={<AppMain />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
+          <Route
+            path="/account/*"
+            element={
+              <main className="min-h-screen bg-gray-950 px-4 py-10 text-white sm:px-6">
+                <div className="mx-auto max-w-6xl">
+                  <div className="mb-8">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-300">🍿 Pop & Chill</p>
+                    <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Your account</h1>
+                    <p className="mt-2 text-sm text-white/55">Manage your profile, security and account settings.</p>
+                  </div>
+                  <UserProfile
+                    routing="path"
+                    path="/account"
+                    appearance={{
+                      variables: {
+                        colorBackground: '#111827',
+                        colorInputBackground: '#0f172a',
+                        colorInputText: '#ffffff',
+                        colorText: '#ffffff',
+                        colorTextSecondary: 'rgba(255,255,255,0.55)',
+                        colorPrimary: '#14b8a6',
+                        borderRadius: '1rem',
+                      },
+                      elements: {
+                        rootBox: 'w-full',
+                        card: 'w-full border border-white/10 bg-white/[0.03] shadow-2xl',
+                        navbar: 'border-r border-white/10 bg-white/[0.02]',
+                        navbarButton: 'text-white/70 hover:bg-white/10 hover:text-white',
+                        navbarButton__active: 'bg-teal-500/15 text-teal-300',
+                        pageScrollBox: 'bg-transparent',
+                        headerTitle: 'text-white',
+                        headerSubtitle: 'text-white/50',
+                        formFieldLabel: 'text-white/70',
+                        formFieldInput: 'border-white/10 bg-gray-950 text-white',
+                        formButtonPrimary: 'bg-teal-500 hover:bg-teal-400',
+                        profileSection: 'border-white/10',
+                        profileSectionContent: 'text-white',
+                        accordionTriggerButton: 'text-white/80 hover:bg-white/5',
+                        badge: 'bg-teal-500/15 text-teal-300',
+                      },
+                    }}
+                  />
+                </div>
+              </main>
+            }
+          />
           <Route path="/movie/:id" element={<MovieDetails />} />
           <Route path="/tv/:id" element={<TVDetails />} />
           <Route path="/tv/:id/season/:season/episode/:episode" element={<EpisodeDetails />} />

@@ -1,6 +1,6 @@
 # Pop & Chill — Movie Explorer
 
-A responsive React application for discovering movies and TV shows, exploring detailed metadata, finding streaming options, and getting recommendations through **The Movie Database (TMDB) API**.
+A responsive React application for discovering movies and TV shows, exploring detailed metadata, finding streaming options, and getting recommendations through **The Movie Database (TMDB) API**, with Clerk authentication and a production-ready serverless API boundary.
 
 ## What it does
 
@@ -9,7 +9,7 @@ A responsive React application for discovering movies and TV shows, exploring de
 - Filter discoveries by genre, year, rating, and sort order
 - Explore recommendations and similar titles
 - View regional streaming, rental, and purchase providers
-- Save a personal watchlist locally (account sync is being added in V2)
+- Save a personal watchlist locally while account persistence is being connected
 - Watch trailers in-app
 - Explore cast, ratings, release information, and biographies
 - Browse TV seasons and individual episodes
@@ -22,9 +22,10 @@ A responsive React application for discovering movies and TV shows, exploring de
 - **Frontend:** React 19, React Router 7
 - **Build:** Vite 7
 - **Styling:** Tailwind CSS 4
-- **Data:** TMDB API
+- **Data:** TMDB API through a Netlify serverless proxy
 - **Authentication:** Clerk
-- **Deployment:** Netlify
+- **Database:** Supabase schema prepared for profiles, watchlists, and history
+- **Deployment:** Netlify + Netlify Functions
 
 ## Getting Started
 
@@ -32,7 +33,7 @@ A responsive React application for discovering movies and TV shows, exploring de
 
 - Node.js
 - npm
-- A TMDB API key
+- A TMDB API key and Clerk application
 
 ### Installation
 
@@ -45,8 +46,13 @@ npm install
 Create `.env` in the project root:
 
 ```env
-VITE_TMDB_API_KEY=your_tmdb_api_key_here
+TMDB_API_KEY=your_tmdb_api_key_here
 VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
+
+# Required by the production account API when enabled
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=server_only_service_role_key
+CLERK_SECRET_KEY=server_only_clerk_secret_key
 ```
 
 Start the development server:
@@ -61,17 +67,23 @@ Build for production:
 npm run build
 ```
 
-> Keep API credentials in environment variables. Do not commit `.env` files or real secrets to the repository.
+> Keep API credentials in environment variables. `TMDB_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `CLERK_SECRET_KEY` are server-only secrets and must never use a `VITE_` prefix. Do not commit `.env` files or real secrets to the repository.
 
 ## Project Highlights
 
 This project demonstrates practical frontend engineering around a third-party API: data fetching and caching, client-side routing, responsive UI, filtering, recommendation flows, local persistence, error handling, and detailed media exploration.
 
+## Production API and database
+
+TMDB requests now go through `/api/tmdb`, backed by a Netlify Function, so the TMDB secret is no longer shipped to the browser. Netlify configuration also handles SPA routing and function deployment.
+
+The `supabase/schema.sql` migration defines the production account tables for profiles, watchlists, and watch history with anonymous access denied by RLS. Run that migration in the Supabase SQL editor before enabling persistent account data.
+
 ## Authentication setup
 
 Pop & Chill now uses Clerk for account authentication. Create a Clerk application and add its publishable key to `.env` as `VITE_CLERK_PUBLISHABLE_KEY` before testing sign-up/sign-in.
 
-Authentication is currently the foundation for the next account features: user profiles, persistent watchlists, and watch history.
+Clerk remains the identity provider. Persistent account data should use the server-side API with Clerk verification and the Supabase service role; the service-role key must never be exposed to the browser.
 
 ## Roadmap
 

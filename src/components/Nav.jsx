@@ -1,45 +1,42 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Nav() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const loadTrending = (category) => {
-    // Navigate back to home with category query
     navigate('/', { state: { category } });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const links = [
+    ['Movies', 'movie'],
+    ['TV Shows', 'tv'],
+    ['Actors', 'person'],
+  ];
+
   return (
-    <nav className="w-full flex flex-col sm:flex-row items-center sm:justify-between py-4 border-b border-white/10 gap-4 sm:gap-0 px-4 sm:px-6 lg:px-8">
-      <h1
-        className="text-xl sm:text-2xl font-bold tracking-tight hover:cursor-pointer"
-        onClick={() => loadTrending('all')}
-      >
-        🍿 Pop & Chill Mate | Movie Explorer
-      </h1>
-      <ul className="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6 text-sm sm:text-base">
-        <li>
-          <button onClick={() => loadTrending('movie')} className="hover:text-teal-400">
-            Movies
+    <nav className="sticky top-0 z-40 w-full border-b border-white/10 bg-gray-950/80 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        <button type="button" onClick={() => loadTrending('all')} className="shrink-0 text-left">
+          <span className="block text-lg font-black tracking-tight sm:text-xl">🍿 Pop & Chill</span>
+          <span className="hidden text-[10px] font-medium uppercase tracking-[0.22em] text-teal-300 sm:block">Movie Explorer</span>
+        </button>
+
+        <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-white/5 p-1">
+          {links.map(([label, category]) => {
+            const active = location.pathname === '/' && location.state?.category === category;
+            return (
+              <button key={category} type="button" onClick={() => loadTrending(category)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm ${active ? 'bg-teal-500 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}>
+                {label}
+              </button>
+            );
+          })}
+          <button type="button" onClick={() => navigate('/watchlist')} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm ${location.pathname === '/watchlist' ? 'bg-teal-500 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}>
+            ♥ My List
           </button>
-        </li>
-        <li>
-          <button onClick={() => loadTrending('tv')} className="hover:text-teal-400">
-            TV Shows
-          </button>
-        </li>
-        <li>
-          <button onClick={() => loadTrending('person')} className="hover:text-teal-400">
-            Actors
-          </button>
-        </li>
-        <li>
-          <button onClick={() => navigate('/watchlist')} className="hover:text-teal-400">
-            My List
-          </button>
-        </li>
-      </ul>
+        </div>
+      </div>
     </nav>
   );
 }

@@ -13,14 +13,14 @@ import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
 import { SkeletonGrid } from '../src/components/SkeletonCard';
 
-function ContentRow({ title, items, onTrailer }) {
+function ContentRow({ title, items, onTrailer, onExplore }) {
   if (!items?.length) return null;
 
   return (
     <section>
       <div className="flex items-end justify-between mb-4">
         <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h3>
-        <span className="text-xs uppercase tracking-widest text-neutral-500">Explore</span>
+        <button type="button" onClick={onExplore} className="text-xs font-semibold uppercase tracking-widest text-teal-300 hover:text-teal-200">See all →</button>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.slice(0, 10).map(item => (
@@ -48,9 +48,14 @@ function AppMain() {
   const [modalTitle, setModalTitle] = useState('');
   const [youTubeKey, setYouTubeKey] = useState(null);
   const [homeRows, setHomeRows] = useState({ popularMovies: [], popularTV: [], topMovies: [], topTV: [], upcoming: [] });
+  const [searchType, setSearchType] = useState('all');
 
   const gridRef = useRef(null);
   const hasQuery = useMemo(() => query.trim().length > 0, [query]);
+  const visibleItems = useMemo(() => {
+    if (activeCategory !== 'search' || searchType === 'all') return items;
+    return items.filter(item => item.media_type === searchType);
+  }, [items, activeCategory, searchType]);
 
   const getRandomBackdrop = useCallback((results) => {
     if (!results || results.length === 0) return null;
@@ -155,6 +160,8 @@ function AppMain() {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
+
+  const explore = (media, params) => loadDiscover(media, params, 1);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -261,11 +268,22 @@ function AppMain() {
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
             <div className="mb-10 space-y-10">
-              <ContentRow title="🔥 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} />
-              <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} />
-              <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} />
-              <ContentRow title="🏆 Top Rated TV Shows" items={homeRows.topTV} onTrailer={openTrailer} />
-              <ContentRow title="🗓️ Upcoming Movies" items={homeRows.upcoming} onTrailer={openTrailer} />
+              <ContentRow title="🔥 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
+              <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'popularity.desc' })} />
+              <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'vote_average.desc', 'vote_count.gte': 200 })} />
+              <ContentRow title="🏆 Top Rated TV Shows" items={homeRows.topTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'vote_average.desc', 'vote_count.gte': 100 })} />
+              <ContentRow title="🗓️ Upcoming Movies" items={homeRows.upcoming} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'primary_release_date.asc', 'primary_release_date.gte': new Date().toISOString().slice(0, 10) })} />
+            </div>
+          )}
+
+          {hasQuery && activeCategory === 'search' && (
+            <div className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+              {[['all', 'All'], ['movie', 'Movies'], ['tv', 'TV Shows'], ['person', 'Actors']].map(([value, label]) => (
+                <button key={value} type="button" onClick={() => setSearchType(value)} className={\`rounded-xl px-4 py-2 text-sm font-semibold transition \${searchType === value ? 'bg-teal-500 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}\`}>
+                  {label}
+                </button>
+              ))}
+              <span className="ml-auto px-3 text-xs text-white/40">{visibleItems.length} shown</span>
             </div>
           )}
 
@@ -279,12 +297,12 @@ function AppMain() {
           ) : (
             <>
               <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                {items.map(item => <MovieCard key={item.id} item={item} onTrailer={openTrailer} />)}
+                {visibleItems.map((item, index) => <MovieCard key={`${item.media_type || 'item'}-${item.id}-${index}`} item={item} onTrailer={openTrailer} />)}
               </div>
 
               {/* Load More */}
               <div className="mt-8 px-4 sm:px-0">
-                <button onClick={loadMore} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg font-semibold">
+                <button onClick={loadMore} disabled={loading} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 rounded-lg font-semibold">
                   {loading ? 'Loading...' : 'Load More'}
                 </button>
               </div>

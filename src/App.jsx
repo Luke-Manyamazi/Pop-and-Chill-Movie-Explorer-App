@@ -499,12 +499,17 @@ export default function App() {
           <Route
             path="/account/*"
             element={
-              <main className="min-h-screen bg-gray-950 px-4 py-10 text-white sm:px-6">
+              <div className="account-page min-h-screen bg-gray-950 text-white">
+                <Nav />
+                <main className="px-4 py-10 text-white sm:px-6">
                 <div className="mx-auto max-w-6xl">
-                  <div className="mb-8">
+                  <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-300">🍿 Pop & Chill</p>
                     <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Your account</h1>
-                    <p className="mt-2 text-sm text-white/70">Manage your profile, security and account settings.</p>
+                    <p className="mt-2 text-sm text-white/80">Manage your profile, security and account settings.</p>
+                    </div>
+                    <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = '/')} className="inline-flex w-fit items-center rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:border-teal-400/50 hover:bg-white/10 hover:text-teal-200">← Back to Pop & Chill</button>
                   </div>
                   <UserProfile
                     routing="path"
@@ -558,7 +563,8 @@ export default function App() {
                     }}
                   />
                 </div>
-              </main>
+                </main>
+              </div>
             }
           />
           <Route path="/movie/:id" element={<MovieDetails />} />

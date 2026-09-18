@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { getTrending, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
+import { getTrending, getPopular, getTopRated, getUpcomingMovies, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
 import TrailerModal from '../src/components/TrailerModal';
 import MovieDetails from '../src/components/MovieDetails';
@@ -12,6 +12,26 @@ import ErrorBoundary from '../src/components/ErrorBoundary';
 import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
 import { SkeletonGrid } from '../src/components/SkeletonCard';
+
+function ContentRow({ title, items, onTrailer }) {
+  if (!items?.length) return null;
+
+  return (
+    <section>
+      <div className="flex items-end justify-between mb-4">
+        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h3>
+        <span className="text-xs uppercase tracking-widest text-neutral-500">Explore</span>
+      </div>
+      <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.slice(0, 10).map(item => (
+          <div key={item.id} className="min-w-[150px] sm:min-w-[180px] max-w-[180px] snap-start">
+            <MovieCard item={item} onTrailer={onTrailer} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function AppMain() {
   const location = useLocation();
@@ -26,6 +46,7 @@ function AppMain() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [youTubeKey, setYouTubeKey] = useState(null);
+  const [homeRows, setHomeRows] = useState({ popularMovies: [], popularTV: [], topMovies: [], topTV: [], upcoming: [] });
 
   const gridRef = useRef(null);
   const hasQuery = useMemo(() => query.trim().length > 0, [query]);
@@ -92,6 +113,34 @@ function AppMain() {
 
   useEffect(() => {
     loadTrending();
+    let cancelled = false;
+
+    const loadHomeRows = async () => {
+      try {
+        const [popularMovies, popularTV, topMovies, topTV, upcoming] = await Promise.all([
+          getPopular('movie'),
+          getPopular('tv'),
+          getTopRated('movie'),
+          getTopRated('tv'),
+          getUpcomingMovies(),
+        ]);
+
+        if (!cancelled) {
+          setHomeRows({
+            popularMovies: popularMovies.results || [],
+            popularTV: popularTV.results || [],
+            topMovies: topMovies.results || [],
+            topTV: topTV.results || [],
+            upcoming: upcoming.results || [],
+          });
+        }
+      } catch {
+        // The main trending feed remains usable if a secondary homepage row fails.
+      }
+    };
+
+    loadHomeRows();
+    return () => { cancelled = true; };
   }, [loadTrending]);
 
   useEffect(() => {
@@ -141,19 +190,59 @@ function AppMain() {
       <Nav />
 
       {/* Hero */}
-      <section className="w-full text-center py-32 px-4 sm:px-8 bg-cover bg-center relative transition-all duration-700 ease-in-out" style={{ backgroundImage: heroBackground ? `url(${heroBackground})` : 'linear-gradient(to right, #0ea5e9, #14b8a6)' }}>
-        <div className="bg-black/50 p-6 rounded-1xl max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-3 text-white">Welcome.</h2>
-          <p className="text-lg sm:text-2xl text-white/90 mb-6">Millions of movies, TV shows and people to discover.</p>
-          <form onSubmit={onSubmit} className="flex flex-col sm:flex-row max-w-xl mx-auto gap-3">
-            <input
-              className="flex-1 rounded-lg px-4 py-2 bg-white text-black placeholder-black/50 focus:outline-none w-full sm:w-auto"
-              placeholder="Search movies, TV shows, people..."
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
-            <button type="submit" className="px-6 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 font-semibold w-full sm:w-auto">Search</button>
-          </form>
+      <section
+        className="relative w-full overflow-hidden bg-cover bg-center py-24 sm:py-32 px-4 sm:px-8"
+        style={{ backgroundImage: heroBackground ? `url(${heroBackground})` : 'linear-gradient(135deg, #0f172a, #0f766e)' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/35" />
+        <div className="relative max-w-7xl mx-auto">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center rounded-full border border-teal-300/30 bg-teal-400/10 px-3 py-1 text-sm font-medium text-teal-200 mb-5">
+              🍿 Your movie night starts here
+            </span>
+            <h2 className="text-4xl sm:text-6xl font-black tracking-tight mb-4">
+              Find something <span className="text-teal-400">worth watching.</span>
+            </h2>
+            <p className="text-base sm:text-xl text-white/75 mb-7 max-w-2xl">
+              Discover movies, TV shows and actors, save your favourites and find your next watch.
+            </p>
+            <form onSubmit={onSubmit} className="flex flex-col sm:flex-row max-w-2xl gap-3">
+              <input
+                className="flex-1 rounded-xl px-5 py-3.5 bg-white text-black placeholder-black/45 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                placeholder="Search movies, TV shows, people..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                aria-label="Search movies, TV shows and people"
+              />
+              <button type="submit" className="px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-bold transition-colors">
+                Search
+              </button>
+            </form>
+            <div className="flex flex-wrap gap-2 mt-5">
+              {[
+                ['Trending', 'all'],
+                ['Movies', 'movie'],
+                ['TV Shows', 'tv'],
+                ['Actors', 'person'],
+              ].map(([label, category]) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => loadTrending(category)}
+                  className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition"
+                >
+                  {label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => navigate('/watchlist')}
+                className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition"
+              >
+                ♥ My List
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -169,6 +258,16 @@ function AppMain() {
           />
         )}
         <section className="py-10">
+          {activeCategory === 'all' && !hasQuery && !discoverParams && (
+            <div className="mb-10 space-y-10">
+              <ContentRow title="🔥 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} />
+              <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} />
+              <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} />
+              <ContentRow title="🏆 Top Rated TV Shows" items={homeRows.topTV} onTrailer={openTrailer} />
+              <ContentRow title="🗓️ Upcoming Movies" items={homeRows.upcoming} onTrailer={openTrailer} />
+            </div>
+          )}
+
           {/* Display error */}
           {error && <p className="text-center py-4 text-red-500">{error}</p>}
 

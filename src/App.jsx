@@ -13,16 +13,56 @@ import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
 import { SkeletonGrid } from '../src/components/SkeletonCard';
 
-function ContentRow({ title, items, onTrailer, onExplore }) {
+function ContentRow({ title, items, onTrailer, onExplore, showArrows = false }) {
+  const rowRef = useRef(null);
+
   if (!items?.length) return null;
+
+  const scrollRow = (direction) => {
+    rowRef.current?.scrollBy({
+      left: direction * Math.max(rowRef.current.clientWidth * 0.8, 320),
+      behavior: 'smooth',
+    });
+  };
 
   return (
     <section>
-      <div className="flex items-end justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-4">
         <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h3>
-        <button type="button" onClick={onExplore} className="text-xs font-semibold uppercase tracking-widest text-teal-300 hover:text-teal-200">See all →</button>
+        <div className="flex items-center gap-2 shrink-0">
+          {showArrows && (
+            <>
+              <button
+                type="button"
+                onClick={() => scrollRow(-1)}
+                aria-label={`Scroll ${title} left`}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg text-white/80 transition hover:border-teal-400/50 hover:bg-white/10 hover:text-white"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollRow(1)}
+                aria-label={`Scroll ${title} right`}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg text-white/80 transition hover:border-teal-400/50 hover:bg-white/10 hover:text-white"
+              >
+                ›
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={onExplore}
+            className="rounded-lg px-2 py-2 text-xs font-semibold uppercase tracking-widest text-teal-300 transition hover:bg-white/5 hover:text-teal-200"
+          >
+            See all →
+          </button>
+        </div>
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={rowRef}
+        className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {items.slice(0, 10).map(item => (
           <div key={item.id} className="min-w-[150px] sm:min-w-[180px] max-w-[180px] snap-start">
             <MovieCard item={item} onTrailer={onTrailer} />
@@ -310,7 +350,7 @@ function AppMain() {
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
             <div className="mb-10 space-y-10">
-              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => loadTrending('all')} />
+              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} showArrows />
               <ContentRow title="🎬 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
               <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'popularity.desc' })} />
               <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'vote_average.desc', 'vote_count.gte': 200 })} />

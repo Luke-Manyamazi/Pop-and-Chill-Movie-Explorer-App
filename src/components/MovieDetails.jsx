@@ -97,7 +97,8 @@ export default function MovieDetails() {
                 ★ {movie.vote_average?.toFixed(1)}
               </span>
             </div>
-            <div className="mb-6 flex flex-wrap gap-2">{movie.genres?.map(g => <span key={g.id} className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold text-teal-200">{g.name}</span>)}</div>\n            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
+            <div className="mb-6 flex flex-wrap gap-2">{movie.genres?.map(g => <span key={g.id} className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold text-teal-200">{g.name}</span>)}</div>
+            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
               {movie.overview}
             </p>
             <div className="flex items-center gap-3">

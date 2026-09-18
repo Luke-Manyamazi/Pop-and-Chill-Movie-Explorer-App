@@ -11,6 +11,7 @@ export default function FilterBar({ media, onApply, onClear, active }) {
   const [genre, setGenre] = useState('');
   const [year, setYear] = useState('');
   const [minRating, setMinRating] = useState('');
+  const [gender, setGender] = useState('');
   const [sortBy, setSortBy] = useState('popularity.desc');
 
   useEffect(() => {
@@ -35,10 +36,18 @@ export default function FilterBar({ media, onApply, onClear, active }) {
     return () => { cancelled = true; };
   }, [media]);
 
-  const activeCount = useMemo(() => [genre, year, minRating].filter(Boolean).length + (sortBy !== 'popularity.desc' ? 1 : 0), [genre, year, minRating, sortBy]);
+  const activeCount = useMemo(() => media === 'person'
+    ? [gender].filter(Boolean).length + (sortBy !== 'popularity.desc' ? 1 : 0)
+    : [genre, year, minRating].filter(Boolean).length + (sortBy !== 'popularity.desc' ? 1 : 0),
+    [media, genre, year, minRating, gender, sortBy]);
 
   function apply() {
     const params = { sort_by: sortBy };
+    if (media === 'person') {
+      if (gender) params.gender = gender;
+      onApply(params);
+      return;
+    }
     if (genre) params.with_genres = genre;
     if (minRating) params['vote_average.gte'] = minRating;
     if (year) params.year = year;
@@ -53,6 +62,7 @@ export default function FilterBar({ media, onApply, onClear, active }) {
     setGenre('');
     setYear('');
     setMinRating('');
+    setGender('');
     setSortBy('popularity.desc');
     onClear();
   }
@@ -66,12 +76,30 @@ export default function FilterBar({ media, onApply, onClear, active }) {
           <div>
             <h2 className="text-sm font-bold">Discover {label}</h2>
             <p className="text-xs text-white/40">
-              {media === 'person' ? 'Filter actors by their known-for work, year, rating and popularity.' : 'Filter by genre, year, rating and popularity.'}
+              {media === 'person' ? 'Filter by gender or sort actors by name, popularity and the ratings of their known-for work.' : 'Filter by genre, year, rating and popularity.'}
             </p>
           </div>
           {activeCount > 0 && <span className="rounded-full bg-teal-500/15 px-2.5 py-1 text-xs font-semibold text-teal-300">{activeCount} filter{activeCount === 1 ? '' : 's'} active</span>}
         </div>
         <div className="flex flex-wrap gap-2">
+          {media === 'person' ? (
+            <>
+              <select value={gender} onChange={e => setGender(e.target.value)} className={selectClass} aria-label="Filter actors by gender">
+                <option value="" className="bg-gray-900">Any Gender</option>
+                <option value="1" className="bg-gray-900">Female</option>
+                <option value="2" className="bg-gray-900">Male</option>
+                <option value="3" className="bg-gray-900">Non-binary</option>
+              </select>
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={selectClass} aria-label="Sort actors">
+                <option value="popularity.desc" className="bg-gray-900">Most Popular</option>
+                <option value="name.asc" className="bg-gray-900">A–Z</option>
+                <option value="name.desc" className="bg-gray-900">Z–A</option>
+                <option value="known_for_rating.desc" className="bg-gray-900">Highest Rated Known For</option>
+                <option value="known_for_votes.desc" className="bg-gray-900">Most Voted Known For</option>
+              </select>
+            </>
+          ) : (
+          <>
           <select value={genre} onChange={e => setGenre(e.target.value)} className={selectClass} aria-label="Filter by genre">
             <option value="" className="bg-gray-900">Any Genre</option>
             {genres.map(g => <option key={g.id} value={g.id} className="bg-gray-900">{g.name}</option>)}
@@ -92,6 +120,8 @@ export default function FilterBar({ media, onApply, onClear, active }) {
           </select>
           <button type="button" onClick={apply} className="btn btn-primary px-5">Apply</button>
           {(active || activeCount > 0) && <button type="button" onClick={clear} className="btn">Reset</button>}
+          </>
+          )}
         </div>
       </div>
     </section>

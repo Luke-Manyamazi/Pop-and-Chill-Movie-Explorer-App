@@ -178,7 +178,16 @@ export default async function handler(request) {
 
       const rows = await supabaseRequest('watch_history?on_conflict=clerk_user_id,tmdb_id,media_type', {
         method: 'POST',
-        body: JSON.stringify({ clerk_user_id: clerkUserId, ...payload, watched_at: new Date().toISOString() }),
+        headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: JSON.stringify({
+          clerk_user_id: clerkUserId,
+          tmdb_id: payload.tmdb_id,
+          media_type: payload.media_type,
+          title: payload.title,
+          name: payload.name,
+          poster_path: payload.poster_path,
+          watched_at: new Date().toISOString(),
+        }),
       });
       return json(200, rows[0] || payload);
     }

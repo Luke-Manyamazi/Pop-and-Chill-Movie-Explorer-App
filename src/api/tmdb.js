@@ -1,17 +1,15 @@
-const API_BASE = 'https://api.themoviedb.org/3';
+const API_BASE = '/api/tmdb';
 const IMG_BASE = 'https://image.tmdb.org/t/p/';
 
 export const img342 = (path) => (path ? `${IMG_BASE}w342${path}` : null);
 export const img780 = (path) => (path ? `${IMG_BASE}w780${path}` : null);
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const cache = new Map();
 
 async function get(path, params = {}) {
-  const url = new URL(API_BASE + path);
-  url.searchParams.set('api_key', API_KEY);
+  const url = new URL(API_BASE, window.location.origin);
+  url.searchParams.set('path', path);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
   const key = url.toString();

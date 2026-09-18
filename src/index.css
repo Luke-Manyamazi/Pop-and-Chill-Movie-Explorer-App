@@ -24,3 +24,59 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* Clerk's generated component markup needs explicit contrast inside the dark account surface. */
+.account-page [class*="cl-"] {
+  color: rgb(255 255 255);
+}
+
+.account-page [class*="cl-headerTitle"],
+.account-page [class*="cl-profileSectionTitle"],
+.account-page [class*="cl-formFieldLabel"],
+.account-page [class*="cl-navbarButton"],
+.account-page [class*="cl-userPreviewMainIdentifier"],
+.account-page [class*="cl-identityPreviewText"],
+.account-page [class*="cl-menuItem"] {
+  color: rgb(255 255 255) !important;
+}
+
+.account-page [class*="cl-headerSubtitle"],
+.account-page [class*="cl-formFieldHintText"],
+.account-page [class*="cl-footerActionText"],
+.account-page [class*="cl-userPreviewSecondaryIdentifier"] {
+  color: rgb(226 232 240) !important;
+}
+
+.account-page [class*="cl-card"],
+.account-page [class*="cl-main"],
+.account-page [class*="cl-pageScrollBox"],
+.account-page [class*="cl-navbar"] {
+  background-color: rgb(17 24 39) !important;
+  color: rgb(255 255 255) !important;
+}
+
+.account-page [class*="cl-profileSection"] {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgb(255 255 255) !important;
+}
+
+.account-page [class*="cl-formFieldInput"] {
+  background-color: rgb(3 7 18) !important;
+  color: rgb(255 255 255) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.account-page [class*="cl-formFieldInput"]::placeholder {
+  color: rgb(148 163 184) !important;
+}
+
+.account-page [class*="cl-profileSectionPrimaryButton"],
+.account-page [class*="cl-footerActionLink"],
+.account-page [class*="cl-identityPreviewEditButton"] {
+  color: rgb(94 234 212) !important;
+}
+
+.account-page [class*="cl-dividerLine"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}

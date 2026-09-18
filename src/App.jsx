@@ -310,7 +310,7 @@ function AppMain() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
               {[['all', 'All'], ['movie', 'Movies'], ['tv', 'TV Shows'], ['person', 'Actors']].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setSearchType(value)} className={\`rounded-xl px-4 py-2 text-sm font-semibold transition \${searchType === value ? 'bg-teal-500 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}\`}>
+                <button key={value} type="button" onClick={() => setSearchType(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${searchType === value ? 'bg-teal-500 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
                   {label}
                 </button>
               ))}

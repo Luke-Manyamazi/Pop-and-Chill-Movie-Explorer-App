@@ -1,11 +1,10 @@
-const json = (statusCode, body) => ({
-  statusCode,
-  headers: {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-  },
-  body: JSON.stringify(body),
-});
+const json = (status, body) =>
+  Response.json(body, {
+    status,
+    headers: {
+      'Cache-Control': 'no-store',
+    },
+  });
 
 function base64UrlToBytes(value) {
   const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
@@ -120,19 +119,20 @@ function itemPayload(item) {
   };
 }
 
-export default async function handler(event) {
-  if (!['GET', 'POST', 'DELETE'].includes(event.httpMethod)) {
+export default async function handler(request) {
+  if (!['GET', 'POST', 'DELETE'].includes(request.method)) {
     return json(405, { error: 'Method not allowed.' });
   }
 
   try {
     requireConfig();
 
-    const authorization = event.headers.authorization || event.headers.Authorization || '';
+    const authorization = request.headers.get('authorization') || '';
     if (!authorization.startsWith('Bearer ')) return json(401, { error: 'Authentication required.' });
 
     const clerkUserId = await verifyClerkToken(authorization.slice(7));
-    const resource = event.queryStringParameters?.resource || 'profile';
+    const url = new URL(request.url);
+    const resource = url.searchParams.get('resource') || 'profile';
 
     await supabaseRequest('user_profiles', {
       method: 'POST',
@@ -140,7 +140,7 @@ export default async function handler(event) {
       body: JSON.stringify({ clerk_user_id: clerkUserId }),
     });
 
-    if (event.httpMethod === 'GET') {
+    if (request.method === 'GET') {
       if (!['profile', 'watchlist', 'history'].includes(resource)) return json(400, { error: 'Invalid resource.' });
 
       if (resource === 'profile') {
@@ -155,9 +155,13 @@ export default async function handler(event) {
     }
 
     let body = {};
-    try { body = event.body ? JSON.parse(event.body) : {}; } catch { return json(400, { error: 'Invalid JSON body.' }); }
+    try {
+      body = await request.json();
+    } catch {
+      return json(400, { error: 'Invalid JSON body.' });
+    }
 
-    if (event.httpMethod === 'POST') {
+    if (request.method === 'POST') {
       if (!['watchlist', 'history'].includes(resource) || !body.item) return json(400, { error: 'A valid resource and item are required.' });
 
       const payload = itemPayload(body.item);
@@ -196,5 +200,3 @@ export default async function handler(event) {
     return json(500, { error: error.message || 'Account service failed.' });
   }
 }
-
-export { handler };

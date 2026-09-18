@@ -90,18 +90,53 @@ function AppMain() {
   const [homeRows, setHomeRows] = useState({ trending: [], popularMovies: [], popularTV: [], topMovies: [], topTV: [], upcoming: [] });
   const [searchType, setSearchType] = useState('all');
   const [surpriseLoading, setSurpriseLoading] = useState(false);
+  const [actorFilters, setActorFilters] = useState({});
 
   const gridRef = useRef(null);
   const hasQuery = useMemo(() => query.trim().length > 0, [query]);
   const visibleItems = useMemo(() => {
-    if (activeCategory !== 'search' || searchType === 'all') return items;
-    return items.filter(item => item.media_type === searchType);
-  }, [items, activeCategory, searchType]);
+    if (activeCategory === 'search' && searchType !== 'all') {
+      return items.filter(item => item.media_type === searchType);
+    }
+    if (activeCategory !== 'person') return items;
+
+    const { with_genres, year, minRating, sort_by } = actorFilters;
+    const filtered = items.filter(actor => {
+      const works = actor.known_for || [];
+      if (with_genres && !works.some(work => (work.genre_ids || []).includes(Number(with_genres)))) return false;
+      if (year && !works.some(work => {
+        const date = work.release_date || work.first_air_date || '';
+        return date.startsWith(String(year));
+      })) return false;
+      if (minRating && !works.some(work => Number(work.vote_average || 0) >= Number(minRating))) return false;
+      return true;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (sort_by === 'vote_average.desc') {
+        const ar = Math.max(...(a.known_for || []).map(w => Number(w.vote_average || 0)), 0);
+        const br = Math.max(...(b.known_for || []).map(w => Number(w.vote_average || 0)), 0);
+        return br - ar;
+      }
+      if (sort_by === 'vote_count.desc') {
+        const ac = Math.max(...(a.known_for || []).map(w => Number(w.vote_count || 0)), 0);
+        const bc = Math.max(...(b.known_for || []).map(w => Number(w.vote_count || 0)), 0);
+        return bc - ac;
+      }
+      if (sort_by === 'known_for_date.desc') {
+        const date = actor => Math.max(...(actor.known_for || []).map(w => new Date(w.release_date || w.first_air_date || 0).getTime()), 0);
+        return date(b) - date(a);
+      }
+      return (b.popularity || 0) - (a.popularity || 0);
+    });
+  }, [items, activeCategory, searchType, actorFilters]);
 
   const getRandomBackdrop = useCallback((results) => {
-    if (!results || results.length === 0) return null;
-    const itemWithBackdrop = results.find(r => r.backdrop_path) || results[0];
-    return itemWithBackdrop ? `https://image.tmdb.org/t/p/original${itemWithBackdrop.backdrop_path}` : null;
+    const candidates = (results || []).filter(item => item?.backdrop_path || item?.profile_path);
+    if (!candidates.length) return null;
+    const item = candidates[Math.floor(Math.random() * candidates.length)];
+    const path = item.backdrop_path || item.profile_path;
+    return `https://image.tmdb.org/t/p/original${path}`;
   }, []);
 
   const loadTrending = useCallback(async (category = 'all', p = 1, append = false) => {
@@ -159,7 +194,7 @@ function AppMain() {
   }, [getRandomBackdrop]);
 
   useEffect(() => {
-    loadTrending();
+    if (!location.state?.category) loadTrending();
     let cancelled = false;
 
     const loadHomeRows = async () => {
@@ -194,8 +229,11 @@ function AppMain() {
   }, [loadTrending]);
 
   useEffect(() => {
-    if (location.state?.category) loadTrending(location.state.category);
-  }, [location.state, loadTrending]);
+    if (!location.state?.category) return;
+    loadTrending(location.state.category).then(() => {
+      navigate('/', { replace: true, state: null });
+    });
+  }, [location.state, loadTrending, navigate]);
 
   // Auto-search as the user types, paused while they're mid-keystroke
   useEffect(() => {
@@ -338,13 +376,32 @@ function AppMain() {
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {(activeCategory === 'movie' || activeCategory === 'tv') && (
+        {(activeCategory === 'movie' || activeCategory === 'tv' || activeCategory === 'person') && (
           <FilterBar
             key={activeCategory}
             media={activeCategory}
             active={!!discoverParams}
-            onApply={(params) => loadDiscover(activeCategory, params, 1)}
-            onClear={() => loadTrending(activeCategory)}
+            onApply={(params) => {
+              if (activeCategory === 'person') {
+                setActorFilters({
+                  with_genres: params.with_genres || '',
+                  year: params.year || '',
+                  minRating: params['vote_average.gte'] || '',
+                  sort_by: params.sort_by || 'popularity.desc',
+                });
+                setPage(1);
+              } else {
+                loadDiscover(activeCategory, params, 1);
+              }
+            }}
+            onClear={() => {
+              if (activeCategory === 'person') {
+                setActorFilters({});
+                setPage(1);
+              } else {
+                loadTrending(activeCategory);
+              }
+            }}
           />
         )}
         <section className="py-10">

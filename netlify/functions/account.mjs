@@ -104,9 +104,6 @@ function requireConfig() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('Supabase is not configured on the server.');
   }
-  if (!process.env.CLERK_SECRET_KEY) {
-    throw new Error('Clerk server configuration is missing.');
-  }
 }
 
 function itemPayload(item) {

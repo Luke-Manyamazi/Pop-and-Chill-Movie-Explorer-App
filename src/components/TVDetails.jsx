@@ -38,7 +38,6 @@ export default function TVDetails() {
         setTV(details);
         addHistory({ ...details, media_type: "tv" });
 
-        // Fixed: Use getTVCredits specifically for TV
         const credits = await getTVCredits(id);
         setCast(credits.cast || []);
 
@@ -106,10 +105,22 @@ export default function TVDetails() {
       </div>
     );
 
+  const backToTVShows = () => {
+    navigate("/", { state: { category: "tv" } });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white pb-20">
       <Nav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <button
+          type="button"
+          onClick={backToTVShows}
+          className="mb-6 text-sm font-semibold text-white/60 hover:text-white"
+        >
+          ← Back to TV Shows
+        </button>
         <div className="flex flex-col md:flex-row gap-10">
           <div className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 md:w-80">
             {tv.backdrop_path && <img src={img780(tv.backdrop_path)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20 blur-sm" />}
@@ -126,7 +137,8 @@ export default function TVDetails() {
                 ★ {tv.vote_average?.toFixed(1)}
               </span>
             </div>
-            <div className="mb-6 flex flex-wrap gap-2">{tv.genres?.map(g => <span key={g.id} className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold text-teal-200">{g.name}</span>)}</div>\n            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
+            <div className="mb-6 flex flex-wrap gap-2">{tv.genres?.map(g => <span key={g.id} className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold text-teal-200">{g.name}</span>)}</div>
+            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
               {tv.overview || "No overview available."}
             </p>
             <div className="flex items-center gap-3">
@@ -142,7 +154,6 @@ export default function TVDetails() {
           </div>
         </div>
 
-        {/* Episodes Section */}
         <section className="mt-16">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <h2 className="text-2xl font-bold border-l-4 border-teal-500 pl-4">
@@ -200,7 +211,6 @@ export default function TVDetails() {
           )}
         </section>
 
-        {/* Cast Section */}
         <section className="mt-16">
           <h2 className="text-2xl font-bold mb-6 border-l-4 border-teal-500 pl-4">
             Top Cast

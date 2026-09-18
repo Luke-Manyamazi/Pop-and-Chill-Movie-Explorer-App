@@ -350,12 +350,46 @@ function AppMain() {
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
             <div className="mb-10 space-y-10">
-              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => loadTrending('all')} showArrows />
+              <ContentRow
+                title="🔥 Trending This Week"
+                items={homeRows.trending}
+                onTrailer={openTrailer}
+                onExplore={() => {
+                  setItems(homeRows.trending);
+                  setPage(1);
+                  setActiveCategory('trending');
+                  setDiscoverParams(null);
+                  setHeroBackground(getRandomBackdrop(homeRows.trending));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                showArrows
+              />
               <ContentRow title="🎬 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
               <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'popularity.desc' })} />
               <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'vote_average.desc', 'vote_count.gte': 200 })} />
               <ContentRow title="🏆 Top Rated TV Shows" items={homeRows.topTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'vote_average.desc', 'vote_count.gte': 100 })} />
               <ContentRow title="🗓️ Upcoming Movies" items={homeRows.upcoming} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'primary_release_date.asc', 'primary_release_date.gte': new Date().toISOString().slice(0, 10) })} />
+            </div>
+          )}
+
+          {activeCategory === 'trending' && (
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-teal-300">Weekly discovery</p>
+                <h3 className="text-2xl sm:text-3xl font-bold">🔥 Trending This Week</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategory('all');
+                  setItems([]);
+                  setHeroBackground(getRandomBackdrop(homeRows.trending));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                ← Home
+              </button>
             </div>
           )}
 
@@ -408,11 +442,13 @@ function AppMain() {
               </div>
 
               {/* Load More */}
-              <div className="mt-8 px-4 sm:px-0">
-                <button onClick={loadMore} disabled={loading} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 rounded-lg font-semibold">
-                  {loading ? 'Loading...' : 'Load More'}
-                </button>
-              </div>
+              {activeCategory !== 'trending' && (
+                <div className="mt-8 px-4 sm:px-0">
+                  <button onClick={loadMore} disabled={loading} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 rounded-lg font-semibold">
+                    {loading ? 'Loading...' : 'Load More'}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </section>

@@ -32,7 +32,15 @@ export const getTrending = (media = 'all', window = 'week', page = 1) =>
 // Homepage discovery
 export const getPopular = (media = 'movie', page = 1) => get(`/${media}/popular`, { page });
 export const getTopRated = (media = 'movie', page = 1) => get(`/${media}/top_rated`, { page });
-export const getUpcomingMovies = (page = 1) => get('/movie/upcoming', { page });
+export const getUpcomingMovies = async (page = 1) => {
+  const today = new Date().toISOString().slice(0, 10);
+  return get('/discover/movie', {
+    page,
+    sort_by: 'primary_release_date.asc',
+    'primary_release_date.gte': today,
+    'vote_count.gte': 1,
+  });
+};
 
 // Random popular title for Surprise Me
 export const getRandomPopular = async () => {

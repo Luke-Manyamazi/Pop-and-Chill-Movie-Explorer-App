@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { getTrending, getPopular, getTopRated, getUpcomingMovies, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
@@ -35,6 +35,7 @@ function ContentRow({ title, items, onTrailer }) {
 
 function AppMain() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);

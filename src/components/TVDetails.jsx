@@ -14,6 +14,7 @@ import Nav from "./Nav";
 import WatchlistButton from "./WatchlistButton";
 import WatchProviders from "./WatchProviders";
 import RecommendedRow from "./RecommendedRow";
+import { useHistory } from "../context/WatchlistContext";
 
 export default function TVDetails() {
   const { id } = useParams();
@@ -27,6 +28,7 @@ export default function TVDetails() {
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [youTubeKey, setYouTubeKey] = useState(null);
+  const { add: addHistory } = useHistory();
 
   useEffect(() => {
     async function fetchData() {
@@ -34,6 +36,7 @@ export default function TVDetails() {
       try {
         const details = await getTVDetails(id);
         setTV(details);
+        addHistory({ ...details, media_type: "tv" });
 
         // Fixed: Use getTVCredits specifically for TV
         const credits = await getTVCredits(id);

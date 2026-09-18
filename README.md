@@ -9,7 +9,7 @@ A responsive React application for discovering movies and TV shows, exploring de
 - Filter discoveries by genre, year, rating, and sort order
 - Explore recommendations and similar titles
 - View regional streaming, rental, and purchase providers
-- Save a personal watchlist locally without an account
+- Save a personal watchlist locally (account sync is being added in V2)
 - Watch trailers in-app
 - Explore cast, ratings, release information, and biographies
 - Browse TV seasons and individual episodes
@@ -23,6 +23,7 @@ A responsive React application for discovering movies and TV shows, exploring de
 - **Build:** Vite 7
 - **Styling:** Tailwind CSS 4
 - **Data:** TMDB API
+- **Authentication:** Clerk
 - **Deployment:** Netlify
 
 ## Getting Started
@@ -45,6 +46,7 @@ Create `.env` in the project root:
 
 ```env
 VITE_TMDB_API_KEY=your_tmdb_api_key_here
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
 ```
 
 Start the development server:
@@ -64,6 +66,12 @@ npm run build
 ## Project Highlights
 
 This project demonstrates practical frontend engineering around a third-party API: data fetching and caching, client-side routing, responsive UI, filtering, recommendation flows, local persistence, error handling, and detailed media exploration.
+
+## Authentication setup
+
+Pop & Chill now uses Clerk for account authentication. Create a Clerk application and add its publishable key to `.env` as `VITE_CLERK_PUBLISHABLE_KEY` before testing sign-up/sign-in.
+
+Authentication is currently the foundation for the next account features: user profiles, persistent watchlists, and watch history.
 
 ## Roadmap
 

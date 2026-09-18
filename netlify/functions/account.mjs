@@ -170,6 +170,7 @@ export default async function handler(request) {
       if (resource === 'watchlist') {
         const rows = await supabaseRequest('watchlist_items?on_conflict=clerk_user_id,tmdb_id,media_type', {
           method: 'POST',
+          headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
           body: JSON.stringify({ clerk_user_id: clerkUserId, ...payload }),
         });
         return json(200, rows[0] || payload);

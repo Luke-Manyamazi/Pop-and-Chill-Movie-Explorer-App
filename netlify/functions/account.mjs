@@ -41,10 +41,18 @@ async function getSigningKey(issuer, kid) {
 
 async function verifyClerkToken(token) {
   const decoded = decodeJwt(token);
-  const issuer = decoded.payload.iss;
-  if (!issuer || !issuer.startsWith('https://')) throw new Error('Invalid token issuer.');
+  const issuer = decoded.payload.iss?.replace(/\/$/, '');
+  const configuredIssuer = process.env.CLERK_ISSUER_URL?.replace(/\/$/, '');
 
-  const key = await getSigningKey(issuer.replace(/\/$/, ''), decoded.header.kid);
+  if (!issuer || !issuer.startsWith('https://')) throw new Error('Invalid token issuer.');
+  if (configuredIssuer && issuer !== configuredIssuer) throw new Error('Invalid token issuer.');
+
+  const hostname = new URL(issuer).hostname;
+  if (!configuredIssuer && !hostname.endsWith('.clerk.accounts.dev') && !hostname.endsWith('.clerk.com')) {
+    throw new Error('Invalid token issuer.');
+  }
+
+  const key = await getSigningKey(issuer, decoded.header.kid);
   if (!key) throw new Error('Authentication key not found.');
 
   const cryptoKey = await crypto.subtle.importKey(

@@ -41,13 +41,10 @@ export default function Nav({ activeCategory }) {
             </SignInButton>
           </Show>
           <Show when="signed-in">
-            <UserButton>
-              <UserButton.MenuItems>
-                <UserButton.Link label="My List" href="/watchlist">
-                  <span slot="label-icon">♥</span>
-                </UserButton.Link>
-              </UserButton.MenuItems>
-            </UserButton>
+            <button type="button" onClick={() => navigate('/watchlist')} className="whitespace-nowrap rounded-full bg-teal-500/15 px-3 py-2 text-xs font-semibold text-teal-200 transition hover:bg-teal-500/25 hover:text-white sm:px-4 sm:text-sm">
+              ♥ My List
+            </button>
+            <UserButton appearance={{ elements: { avatarBox: 'h-9 w-9' } }} />
           </Show>
         </div>
       </div>

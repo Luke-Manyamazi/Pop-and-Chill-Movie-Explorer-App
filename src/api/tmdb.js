@@ -29,6 +29,11 @@ async function get(path, params = {}) {
 export const getTrending = (media = 'all', window = 'week', page = 1) =>
   get(`/trending/${media}/${window}`, { page });
 
+// Homepage discovery
+export const getPopular = (media = 'movie', page = 1) => get(`/${media}/popular`, { page });
+export const getTopRated = (media = 'movie', page = 1) => get(`/${media}/top_rated`, { page });
+export const getUpcomingMovies = (page = 1) => get('/movie/upcoming', { page });
+
 // Search
 export const searchMulti = (q, page = 1) =>
   get('/search/multi', { query: q, page, include_adult: 'false' });

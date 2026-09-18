@@ -34,6 +34,15 @@ export const getPopular = (media = 'movie', page = 1) => get(`/${media}/popular`
 export const getTopRated = (media = 'movie', page = 1) => get(`/${media}/top_rated`, { page });
 export const getUpcomingMovies = (page = 1) => get('/movie/upcoming', { page });
 
+// Random popular title for Surprise Me
+export const getRandomPopular = async () => {
+  const media = Math.random() > 0.5 ? 'movie' : 'tv';
+  const page = Math.floor(Math.random() * 5) + 1;
+  const data = await get(`/${media}/popular`, { page });
+  const results = (data.results || []).filter(item => item.poster_path);
+  return results.length ? { ...results[Math.floor(Math.random() * results.length)], media_type: media } : null;
+};
+
 // Search
 export const searchMulti = (q, page = 1) =>
   get('/search/multi', { query: q, page, include_adult: 'false' });

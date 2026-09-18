@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/react';
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react';
 
 export default function Nav({ activeCategory }) {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function Nav({ activeCategory }) {
           <button type="button" onClick={() => navigate('/watchlist')} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm ${location.pathname === '/watchlist' ? 'bg-teal-500 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}>
             ♥ My List
           </button>
-          <SignedOut>
+          <Show when="signed-out">
             <SignInButton mode="redirect">
               <button type="button" className="whitespace-nowrap rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white/70 transition hover:border-teal-400/40 hover:bg-white/10 hover:text-white sm:px-4 sm:text-sm">
                 Sign in
@@ -47,10 +47,10 @@ export default function Nav({ activeCategory }) {
                 Sign up
               </button>
             </SignUpButton>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <UserButton />
-          </SignedIn>
+          </Show>
         </div>
       </div>
     </nav>

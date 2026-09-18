@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getMovieDetails,
   getCredits,
@@ -17,6 +17,7 @@ import { useHistory } from "../context/WatchlistContext";
 
 export default function MovieDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [cast, setCast] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,10 +81,22 @@ export default function MovieDetails() {
       </div>
     );
 
+  const backToMovies = () => {
+    navigate("/", { state: { category: "movie" } });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Nav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <button
+          type="button"
+          onClick={backToMovies}
+          className="mb-6 text-sm font-semibold text-white/60 hover:text-white"
+        >
+          ← Back to Movies
+        </button>
         <div className="flex flex-col md:flex-row gap-10">
           <div className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 md:w-80">
             {movie.backdrop_path && <img src={img780(movie.backdrop_path)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20 blur-sm" />}

@@ -417,7 +417,7 @@ function AppMain() {
                   key={category}
                   type="button"
                   onClick={() => handleCategory(category)}
-                  className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition"
+                  className={\`rounded-full border px-4 py-2 text-sm transition \${activeCategory === category || (category === 'all' && activeCategory === 'all') ? 'border-teal-400/50 bg-teal-500 text-white' : 'border-white/15 bg-black/20 text-white/80 hover:border-teal-400/50 hover:text-teal-300'}\`}
                 >
                   {label}
                 </button>

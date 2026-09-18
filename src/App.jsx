@@ -91,6 +91,11 @@ function AppMain() {
   const [searchType, setSearchType] = useState('all');
   const [surpriseLoading, setSurpriseLoading] = useState(false);
   const [actorFilters, setActorFilters] = useState({});
+  const [heroCopy, setHeroCopy] = useState({
+    eyebrow: '🍿 Your movie night starts here',
+    title: <>Find something <span className="text-teal-400">worth watching.</span></>,
+    description: 'Discover movies, TV shows and actors, save your favourites and find your next watch.',
+  });
 
   const gridRef = useRef(null);
   const hasQuery = useMemo(() => query.trim().length > 0, [query]);
@@ -148,6 +153,24 @@ function AppMain() {
       setPage(p);
       setActiveCategory(category);
       if (!append) setDiscoverParams(null);
+      if (!append) setHeroBackground(getRandomBackdrop(data.results));
+      return data;
+    } catch (e) {
+      setError(String(e.message || e));
+    } finally {
+      setLoading(false);
+    }
+  }, [getRandomBackdrop]);
+
+  const loadActors = useCallback(async (p = 1, append = false) => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getPopular('person', p);
+      setItems(prev => append ? [...prev, ...(data.results || [])] : (data.results || []));
+      setPage(p);
+      setActiveCategory('person');
+      setDiscoverParams(null);
       if (!append) setHeroBackground(getRandomBackdrop(data.results));
       return data;
     } catch (e) {
@@ -245,9 +268,50 @@ function AppMain() {
 
   const explore = (media, params) => loadDiscover(media, params, 1);
 
+  useEffect(() => {
+    const copy = {
+      all: {
+        eyebrow: '🍿 Your movie night starts here',
+        title: <>Find something <span className="text-teal-400">worth watching.</span></>,
+        description: 'Discover movies, TV shows and actors, save your favourites and find your next watch.',
+      },
+      movie: {
+        eyebrow: '🎬 Movie discovery',
+        title: <>Find your next <span className="text-teal-400">great movie.</span></>,
+        description: 'Browse popular films, explore new releases, filter by genre and rating, and build your watchlist.',
+      },
+      tv: {
+        eyebrow: '📺 TV discovery',
+        title: <>Your next <span className="text-teal-400">binge starts here.</span></>,
+        description: 'Explore TV shows by genre, year, rating and popularity, then find something worth watching.',
+      },
+      person: {
+        eyebrow: '🎭 Actor discovery',
+        title: <>Meet the people behind the <span className="text-teal-400">stories.</span></>,
+        description: 'Explore popular actors and discover them through the movies and TV shows they are known for.',
+      },
+      trending: {
+        eyebrow: '🔥 Trending this week',
+        title: <>See what everyone is <span className="text-teal-400">watching.</span></>,
+        description: 'Catch the movies and TV shows gaining attention right now and find your next watch.',
+      },
+      search: {
+        eyebrow: '🔎 Search Pop & Chill',
+        title: <>Find exactly what you are <span className="text-teal-400">looking for.</span></>,
+        description: 'Search across movies, TV shows and actors, then narrow the results to what interests you.',
+      },
+    };
+    setHeroCopy(copy[activeCategory] || copy.all);
+  }, [activeCategory]);
+
   const onSubmit = (e) => {
     e.preventDefault();
     runSearch(1);
+  };
+
+  const handleCategory = async (category) => {
+    if (category === 'person') return loadActors(1);
+    return loadTrending(category);
   };
 
   const surpriseMe = async () => {
@@ -295,7 +359,8 @@ function AppMain() {
     const firstNewIndex = visibleItems.length;
 
     try {
-      if (activeCategory === 'search') await runSearch(nextPage, true);
+      if (activeCategory === 'person') await loadActors(nextPage, true);
+      else if (activeCategory === 'search') await runSearch(nextPage, true);
       else if (discoverParams) await loadDiscover(activeCategory, discoverParams, nextPage, true);
       else await loadTrending(activeCategory, nextPage, true);
 
@@ -318,13 +383,13 @@ function AppMain() {
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">
             <span className="inline-flex items-center rounded-full border border-teal-300/30 bg-teal-400/10 px-3 py-1 text-sm font-medium text-teal-200 mb-5">
-              🍿 Your movie night starts here
+              {heroCopy.eyebrow}
             </span>
             <h2 className="text-4xl sm:text-6xl font-black tracking-tight mb-4">
-              Find something <span className="text-teal-400">worth watching.</span>
+              {heroCopy.title}
             </h2>
             <p className="text-base sm:text-xl text-white/75 mb-7 max-w-2xl">
-              Discover movies, TV shows and actors, save your favourites and find your next watch.
+              {heroCopy.description}
             </p>
             <form onSubmit={onSubmit} className="flex flex-col sm:flex-row max-w-2xl gap-3">
               <input
@@ -348,7 +413,7 @@ function AppMain() {
                 <button
                   key={category}
                   type="button"
-                  onClick={() => loadTrending(category)}
+                  onClick={() => handleCategory(category)}
                   className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition"
                 >
                   {label}
@@ -358,7 +423,7 @@ function AppMain() {
                 type="button"
                 onClick={surpriseMe}
                 disabled={surpriseLoading}
-                className="rounded-full border border-teal-300/30 bg-teal-400/10 px-4 py-2 text-sm font-semibold text-teal-200 hover:bg-teal-400/20 disabled:cursor-wait disabled:opacity-60 transition"
+                className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm font-semibold text-white/80 hover:border-teal-400/50 hover:text-teal-300 disabled:cursor-wait disabled:opacity-60 transition"
               >
                 {surpriseLoading ? '🎲 Finding...' : '🎲 Surprise Me'}
               </button>
@@ -383,13 +448,24 @@ function AppMain() {
             active={!!discoverParams}
             onApply={(params) => {
               if (activeCategory === 'person') {
-                setActorFilters({
+                const nextFilters = {
                   with_genres: params.with_genres || '',
                   year: params.year || '',
                   minRating: params['vote_average.gte'] || '',
                   sort_by: params.sort_by || 'popularity.desc',
-                });
+                };
+                setActorFilters(nextFilters);
                 setPage(1);
+                Promise.all([1, 2, 3, 4, 5].map(actorPage => getPopular('person', actorPage)))
+                  .then(pages => {
+                    const combined = pages.flatMap(data => data.results || []);
+                    const unique = Array.from(new Map(combined.map(actor => [actor.id, actor])).values());
+                    setItems(unique);
+                    setActiveCategory('person');
+                    setDiscoverParams(null);
+                    setHeroBackground(getRandomBackdrop(unique));
+                  })
+                  .catch(e => setError(String(e.message || e)));
               } else {
                 loadDiscover(activeCategory, params, 1);
               }
@@ -397,7 +473,7 @@ function AppMain() {
             onClear={() => {
               if (activeCategory === 'person') {
                 setActorFilters({});
-                setPage(1);
+                loadActors(1);
               } else {
                 loadTrending(activeCategory);
               }

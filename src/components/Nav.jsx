@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export default function Nav() {
+export default function Nav({ activeCategory }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,7 +25,7 @@ export default function Nav() {
 
         <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-white/5 p-1">
           {links.map(([label, category]) => {
-            const active = location.pathname === '/' && location.state?.category === category;
+            const active = location.pathname === '/' && (activeCategory ? activeCategory === category : location.state?.category === category);
             return (
               <button key={category} type="button" onClick={() => loadTrending(category)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm ${active ? 'bg-teal-500 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}>
                 {label}

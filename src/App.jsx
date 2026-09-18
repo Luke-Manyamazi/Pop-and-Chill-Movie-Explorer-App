@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { getTrending, getPopular, getTopRated, getUpcomingMovies, getRandomPopular, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
+import { getTrending, getPopular, getTopRated, getUpcomingMovies, getRandomPopular, searchMulti, getDiscover, getVideos, pickYouTubeTrailer, getPersonDetails } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
 import TrailerModal from '../src/components/TrailerModal';
 import MovieDetails from '../src/components/MovieDetails';
@@ -105,32 +105,21 @@ function AppMain() {
     }
     if (activeCategory !== 'person') return items;
 
-    const { with_genres, year, minRating, sort_by } = actorFilters;
-    const filtered = items.filter(actor => {
-      const works = actor.known_for || [];
-      if (with_genres && !works.some(work => (work.genre_ids || []).includes(Number(with_genres)))) return false;
-      if (year && !works.some(work => {
-        const date = work.release_date || work.first_air_date || '';
-        return date.startsWith(String(year));
-      })) return false;
-      if (minRating && !works.some(work => Number(work.vote_average || 0) >= Number(minRating))) return false;
-      return true;
-    });
+    const { gender, sort_by } = actorFilters;
+    const filtered = items.filter(actor => !gender || Number(actor.gender || 0) === Number(gender));
 
     return [...filtered].sort((a, b) => {
-      if (sort_by === 'vote_average.desc') {
+      if (sort_by === 'name.asc') return (a.name || '').localeCompare(b.name || '');
+      if (sort_by === 'name.desc') return (b.name || '').localeCompare(a.name || '');
+      if (sort_by === 'known_for_rating.desc') {
         const ar = Math.max(...(a.known_for || []).map(w => Number(w.vote_average || 0)), 0);
         const br = Math.max(...(b.known_for || []).map(w => Number(w.vote_average || 0)), 0);
         return br - ar;
       }
-      if (sort_by === 'vote_count.desc') {
+      if (sort_by === 'known_for_votes.desc') {
         const ac = Math.max(...(a.known_for || []).map(w => Number(w.vote_count || 0)), 0);
         const bc = Math.max(...(b.known_for || []).map(w => Number(w.vote_count || 0)), 0);
         return bc - ac;
-      }
-      if (sort_by === 'known_for_date.desc') {
-        const date = actor => Math.max(...(actor.known_for || []).map(w => new Date(w.release_date || w.first_air_date || 0).getTime()), 0);
-        return date(b) - date(a);
       }
       return (b.popularity || 0) - (a.popularity || 0);
     });
@@ -452,23 +441,27 @@ function AppMain() {
             onApply={(params) => {
               if (activeCategory === 'person') {
                 const nextFilters = {
-                  with_genres: params.with_genres || '',
-                  year: params.year || '',
-                  minRating: params['vote_average.gte'] || '',
+                  gender: params.gender || '',
                   sort_by: params.sort_by || 'popularity.desc',
                 };
                 setActorFilters(nextFilters);
                 setPage(1);
                 setLoading(true);
                 setError('');
-                Promise.all([1, 2, 3, 4, 5].map(actorPage => getPopular('person', actorPage)))
-                  .then(pages => {
-                    const combined = pages.flatMap(data => data.results || []);
-                    const unique = Array.from(new Map(combined.map(actor => [actor.id, actor])).values());
-                    setItems(unique);
+                getPopular('person', 1)
+                  .then(data => {
+                    const actors = data.results || [];
+                    if (!params.gender) return actors;
+                    return Promise.all(actors.map(async actor => ({
+                      ...actor,
+                      ...(await getPersonDetails(actor.id)),
+                    })));
+                  })
+                  .then(actors => {
+                    setItems(actors);
                     setActiveCategory('person');
                     setDiscoverParams(null);
-                    setHeroBackground(getRandomBackdrop(unique));
+                    setHeroBackground(getRandomBackdrop(actors));
                   })
                   .catch(e => setError(String(e.message || e)))
                   .finally(() => setLoading(false));

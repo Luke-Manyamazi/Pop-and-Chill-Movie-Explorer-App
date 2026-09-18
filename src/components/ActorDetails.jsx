@@ -80,7 +80,7 @@ export default function ActorDetails() {
     <div className="min-h-screen bg-gray-900 text-white pb-20">
       <Nav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <button type="button" onClick={() => navigate(-1)} className="mb-6 text-sm font-semibold text-white/60 hover:text-white">← Back</button>
+        <button type="button" onClick={() => navigate('/', { state: { category: 'person' } })} className="mb-6 text-sm font-semibold text-white/60 hover:text-white">← Back</button>
         <div className="flex flex-col md:flex-row gap-10 rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-6 sm:p-8">
           <div className="w-full md:w-64 shrink-0">
             {person.profile_path ? (

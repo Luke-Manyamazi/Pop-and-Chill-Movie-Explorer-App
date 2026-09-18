@@ -253,12 +253,10 @@ function AppMain() {
     });
   }, [location.state, loadTrending, loadActors, navigate]);
 
-  // Auto-search as the user types, paused while they're mid-keystroke
   useEffect(() => {
     if (!hasQuery) return;
     const t = setTimeout(() => runSearch(1), 500);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
   const explore = (media, params) => loadDiscover(media, params, 1);
@@ -368,8 +366,6 @@ function AppMain() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Nav activeCategory={activeCategory} />
-
-      {/* Hero */}
       <section
         className="relative w-full overflow-hidden bg-cover bg-center py-24 sm:py-32 px-4 sm:px-8"
         style={{ backgroundImage: heroBackground ? `url(${heroBackground})` : 'linear-gradient(135deg, #0f172a, #0f766e)' }}
@@ -377,128 +373,71 @@ function AppMain() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/35" />
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center rounded-full border border-teal-300/30 bg-teal-400/10 px-3 py-1 text-sm font-medium text-teal-200 mb-5">
+            <span className="inline-flex items-center rounded-full border border-teal-300/30 bg-teal-400/10 px-3 py-1 text-sm font-medium text-teal-200">
               {heroCopy.eyebrow}
             </span>
-            <h2 className="text-4xl sm:text-6xl font-black tracking-tight mb-4">
-              {heroCopy.title}
-            </h2>
-            <p className="text-base sm:text-xl text-white/75 mb-7 max-w-2xl">
-              {heroCopy.description}
-            </p>
+            <h2 className="text-4xl sm:text-6xl font-black tracking-tight mb-4">{heroCopy.title}</h2>
+            <p className="text-base sm:text-xl text-white/75 mb-7 max-w-2xl">{heroCopy.description}</p>
             <form onSubmit={onSubmit} className="flex flex-col sm:flex-row max-w-2xl gap-3">
-              <input
-                className="flex-1 rounded-xl px-5 py-3.5 bg-white text-black placeholder-black/45 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                placeholder="Search movies, TV shows, people..."
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                aria-label="Search movies, TV shows and people"
-              />
-              <button type="submit" className="px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-bold transition-colors">
-                Search
-              </button>
+              <input className="flex-1 rounded-xl px-5 py-3.5 bg-white text-black placeholder-black/45 focus:outline-none focus:ring-2 focus:ring-teal-400" placeholder="Search movies, TV shows, people..." value={query} onChange={e => setQuery(e.target.value)} aria-label="Search movies, TV shows and people" />
+              <button type="submit" className="px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-bold transition-colors">Search</button>
             </form>
             <div className="flex flex-wrap gap-2 mt-5">
-              {[
-                ['Trending', 'all'],
-                ['Movies', 'movie'],
-                ['TV Shows', 'tv'],
-                ['Actors', 'person'],
-              ].map(([label, category]) => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => handleCategory(category)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${activeCategory === category || (category === 'all' && activeCategory === 'all') ? 'border-teal-400/50 bg-teal-500 text-white' : 'border-white/15 bg-black/20 text-white/80 hover:border-teal-400/50 hover:text-teal-300'}`}
-                >
-                  {label}
-                </button>
+              {[['Trending', 'all'], ['Movies', 'movie'], ['TV Shows', 'tv'], ['Actors', 'person']].map(([label, category]) => (
+                <button key={category} type="button" onClick={() => handleCategory(category)} className={`rounded-full border px-4 py-2 text-sm transition ${activeCategory === category || (category === 'all' && activeCategory === 'all') ? 'border-teal-400/50 bg-teal-500 text-white' : 'border-white/15 bg-black/20 text-white/80 hover:border-teal-400/50 hover:text-teal-300'}`}>{label}</button>
               ))}
-              <button
-                type="button"
-                onClick={surpriseMe}
-                disabled={surpriseLoading}
-                className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm font-semibold text-white/80 hover:border-teal-400/50 hover:text-teal-300 disabled:cursor-wait disabled:opacity-60 transition"
-              >
-                {surpriseLoading ? '🎲 Finding...' : '🎲 Surprise Me'}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/watchlist')}
-                className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition"
-              >
-                ♥ My List
-              </button>
+              <button type="button" onClick={surpriseMe} disabled={surpriseLoading} className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm font-semibold text-white/80 hover:border-teal-400/50 hover:text-teal-300 disabled:cursor-wait disabled:opacity-60 transition">{surpriseLoading ? '🎲 Finding...' : '🎲 Surprise Me'}</button>
+              <button type="button" onClick={() => navigate('/watchlist')} className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition">♥ My List</button>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {(activeCategory === 'movie' || activeCategory === 'tv' || activeCategory === 'person') && (
-          <FilterBar
-            key={activeCategory}
-            media={activeCategory}
-            active={!!discoverParams}
-            onApply={(params) => {
-              if (activeCategory === 'person') {
-                const nextFilters = {
-                  gender: params.gender || '',
-                  sort_by: params.sort_by || 'popularity.desc',
-                };
-                setActorFilters(nextFilters);
-                setPage(1);
-                setLoading(true);
-                setError('');
-                getPopular('person', 1)
-                  .then(data => {
-                    const actors = data.results || [];
-                    if (!params.gender) return actors;
-                    return Promise.all(actors.map(async actor => ({
-                      ...actor,
-                      ...(await getPersonDetails(actor.id)),
-                    })));
-                  })
-                  .then(actors => {
-                    setItems(actors);
-                    setActiveCategory('person');
-                    setDiscoverParams(null);
-                    setHeroBackground(getRandomBackdrop(actors));
-                  })
-                  .catch(e => setError(String(e.message || e)))
-                  .finally(() => setLoading(false));
-              } else {
-                loadDiscover(activeCategory, params, 1);
-              }
-            }}
-            onClear={() => {
-              if (activeCategory === 'person') {
-                setActorFilters({});
-                loadActors(1);
-              } else {
-                loadTrending(activeCategory);
-              }
-            }}
-          />
+          <FilterBar key={activeCategory} media={activeCategory} active={!!discoverParams} onApply={(params) => {
+            if (activeCategory === 'person') {
+              const nextFilters = { gender: params.gender || '', sort_by: params.sort_by || 'popularity.desc' };
+              setActorFilters(nextFilters);
+              setPage(1);
+              setLoading(true);
+              setError('');
+              getPopular('person', 1)
+                .then(data => {
+                  const actors = data.results || [];
+                  if (!params.gender) return actors;
+                  return Promise.all(actors.map(async actor => ({ ...actor, ...(await getPersonDetails(actor.id)) })));
+                })
+                .then(actors => {
+                  setItems(actors);
+                  setActiveCategory('person');
+                  setDiscoverParams(null);
+                  setHeroBackground(getRandomBackdrop(actors));
+                })
+                .catch(e => setError(String(e.message || e)))
+                .finally(() => setLoading(false));
+            } else {
+              loadDiscover(activeCategory, params, 1);
+            }
+          }} onClear={() => {
+            if (activeCategory === 'person') {
+              setActorFilters({});
+              loadActors(1);
+            } else {
+              loadTrending(activeCategory);
+            }
+          }} />
         )}
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
             <div className="mb-10 space-y-10">
-              <ContentRow
-                title="🔥 Trending This Week"
-                items={homeRows.trending}
-                onTrailer={openTrailer}
-                onExplore={() => {
-                  setItems(homeRows.trending);
-                  setPage(1);
-                  setActiveCategory('trending');
-                  setDiscoverParams(null);
-                  setHeroBackground(getRandomBackdrop(homeRows.trending));
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                showArrows
-              />
+              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => {
+                setItems(homeRows.trending);
+                setPage(1);
+                setActiveCategory('trending');
+                setDiscoverParams(null);
+                setHeroBackground(getRandomBackdrop(homeRows.trending));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} showArrows />
               <ContentRow title="🎬 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
               <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'popularity.desc' })} />
               <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'vote_average.desc', 'vote_count.gte': 200 })} />
@@ -506,104 +445,45 @@ function AppMain() {
               <ContentRow title="🗓️ Upcoming Movies" items={homeRows.upcoming} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'primary_release_date.asc', 'primary_release_date.gte': new Date().toISOString().slice(0, 10) })} />
             </div>
           )}
-
           {activeCategory === 'trending' && (
             <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-teal-300">Weekly discovery</p>
-                <h3 className="text-2xl sm:text-3xl font-bold">🔥 Trending This Week</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveCategory('all');
-                  setItems([]);
-                  setHeroBackground(getRandomBackdrop(homeRows.trending));
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
-              >
-                ← Home
-              </button>
+              <div><p className="text-xs font-semibold uppercase tracking-widest text-teal-300">Weekly discovery</p><h3 className="text-2xl sm:text-3xl font-bold">🔥 Trending This Week</h3></div>
+              <button type="button" onClick={() => { setActiveCategory('all'); setItems([]); setHeroBackground(getRandomBackdrop(homeRows.trending)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">← Home</button>
             </div>
           )}
-
           {hasQuery && activeCategory === 'search' && (
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-teal-300">Search results</p>
-                  <h3 className="text-lg font-bold">Results for “{query.trim()}”</h3>
-                </div>
-                <button type="button" onClick={() => { setQuery(''); setSearchType('all'); loadTrending('all'); }} className="rounded-lg px-3 py-2 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white">Clear search</button>
-              </div>
+              <div className="mb-3 flex items-center justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-widest text-teal-300">Search results</p><h3 className="text-lg font-bold">Results for “{query.trim()}”</h3></div><button type="button" onClick={() => { setQuery(''); setSearchType('all'); loadTrending('all'); }} className="rounded-lg px-3 py-2 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white">Clear search</button></div>
               <div className="flex flex-wrap items-center gap-2">
-              {[['all', 'All'], ['movie', 'Movies'], ['tv', 'TV Shows'], ['person', 'Actors']].map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setSearchType(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${searchType === value ? 'bg-teal-500 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
-                  {label}
-                </button>
-              ))}
+                {[['all', 'All'], ['movie', 'Movies'], ['tv', 'TV Shows'], ['person', 'Actors']].map(([value, label]) => <button key={value} type="button" onClick={() => setSearchType(value)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${searchType === value ? 'bg-teal-500 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>{label}</button>)}
                 <span className="ml-auto px-3 text-xs text-white/40">{visibleItems.length} shown</span>
               </div>
             </div>
           )}
-
           {error && (
             <div role="alert" className="mx-auto mb-6 max-w-2xl rounded-2xl border border-red-400/20 bg-red-400/10 p-5 text-center">
-              <p className="font-semibold text-red-200">Something went wrong</p>
-              <p className="mt-1 text-sm text-red-200/70">{error}</p>
+              <p className="font-semibold text-red-200">Something went wrong</p><p className="mt-1 text-sm text-red-200/70">{error}</p>
               <button type="button" onClick={() => activeCategory === 'search' ? runSearch(page) : discoverParams ? loadDiscover(activeCategory, discoverParams, page) : loadTrending(activeCategory, page)} className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20">Try again</button>
             </div>
           )}
-
-          {loading && page === 1 ? (
-            <SkeletonGrid />
-          ) : !loading && activeCategory === 'search' && hasQuery && visibleItems.length === 0 ? (
-            <div className="mx-auto max-w-xl py-16 text-center">
-              <div className="text-5xl">🔎</div>
-              <h3 className="mt-4 text-xl font-bold">No matches found</h3>
-              <p className="mt-2 text-sm text-white/50">Try a different title, actor, or search category.</p>
-            </div>
+          {loading && page === 1 ? <SkeletonGrid /> : !loading && activeCategory === 'search' && hasQuery && visibleItems.length === 0 ? (
+            <div className="mx-auto max-w-xl py-16 text-center"><div className="text-5xl">🔎</div><h3 className="mt-4 text-xl font-bold">No matches found</h3><p className="mt-2 text-sm text-white/50">Try a different title, actor, or search category.</p></div>
           ) : !loading && items.length === 0 ? (
             <div className="py-16 text-center text-white/60"><div className="text-4xl">🍿</div><p className="mt-3">Nothing to show yet. Try another discovery option.</p></div>
           ) : (
             <>
               <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                {visibleItems.map((item, index) => (
-                  <div key={`${item.media_type || 'item'}-${item.id}-${index}`} data-grid-index={index}>
-                    <MovieCard item={item} onTrailer={openTrailer} />
-                  </div>
-                ))}
+                {visibleItems.map((item, index) => <div key={`${item.media_type || 'item'}-${item.id}-${index}`} data-grid-index={index}><MovieCard item={item} onTrailer={openTrailer} /></div>)}
               </div>
-
-              {/* Load More */}
-              {activeCategory !== 'trending' && (
-                <div className="mt-8 px-4 sm:px-0">
-                  <button onClick={loadMore} disabled={loading} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 rounded-lg font-semibold">
-                    {loading ? 'Loading...' : 'Load More'}
-                  </button>
-                </div>
-              )}
+              {activeCategory !== 'trending' && <div className="mt-8 px-4 sm:px-0"><button onClick={loadMore} disabled={loading} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-50 rounded-lg font-semibold">{loading ? 'Loading...' : 'Load More'}</button></div>}
             </>
           )}
         </section>
       </div>
-
-      {/* Footer */}
       <footer className="w-full bg-neutral-900/80 border-t border-white/10 mt-12 text-center text-sm text-neutral-400 py-4">
-        <div className="flex flex-col items-center gap-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span>© {new Date().getFullYear()} Pop & Chill Mate. All rights reserved.</span>
-          <span>Data provided by <a href="https://www.themoviedb.org/" className="underline hover:text-white" target="_blank" rel="noopener noreferrer">TMDb</a></span>
-        </div>
+        <div className="flex flex-col items-center gap-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><span>© {new Date().getFullYear()} Pop & Chill Mate. All rights reserved.</span><span>Data provided by <a href="https://www.themoviedb.org/" className="underline hover:text-white" target="_blank" rel="noopener noreferrer">TMDb</a></span></div>
       </footer>
-
-      {/* Trailer Modal */}
-      <TrailerModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        youTubeKey={youTubeKey}
-        title={modalTitle}
-      />
+      <TrailerModal open={modalOpen} onClose={() => setModalOpen(false)} youTubeKey={youTubeKey} title={modalTitle} />
     </div>
   );
 }
@@ -624,7 +504,7 @@ export default function App() {
                   <div className="mb-8">
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-300">🍿 Pop & Chill</p>
                     <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Your account</h1>
-                    <p className="mt-2 text-sm text-white/55">Manage your profile, security and account settings.</p>
+                    <p className="mt-2 text-sm text-white/70">Manage your profile, security and account settings.</p>
                   </div>
                   <UserProfile
                     routing="path"
@@ -635,26 +515,45 @@ export default function App() {
                         colorInputBackground: '#0f172a',
                         colorInputText: '#ffffff',
                         colorText: '#ffffff',
-                        colorTextSecondary: 'rgba(255,255,255,0.55)',
+                        colorTextSecondary: 'rgba(255,255,255,0.78)',
                         colorPrimary: '#14b8a6',
+                        colorDanger: '#fca5a5',
                         borderRadius: '1rem',
                       },
                       elements: {
-                        rootBox: 'w-full',
-                        card: 'w-full border border-white/10 bg-white/[0.03] shadow-2xl',
-                        navbar: 'border-r border-white/10 bg-white/[0.02]',
-                        navbarButton: 'text-white/70 hover:bg-white/10 hover:text-white',
+                        rootBox: 'w-full text-white',
+                        card: 'w-full border border-white/10 bg-gray-900 text-white shadow-2xl',
+                        main: 'bg-gray-900 text-white',
+                        navbar: 'border-r border-white/10 bg-gray-900',
+                        navbarButton: 'text-white/80 hover:bg-white/10 hover:text-white',
                         navbarButton__active: 'bg-teal-500/15 text-teal-300',
-                        pageScrollBox: 'bg-transparent',
+                        pageScrollBox: 'bg-gray-900 text-white',
                         headerTitle: 'text-white',
-                        headerSubtitle: 'text-white/50',
-                        formFieldLabel: 'text-white/70',
-                        formFieldInput: 'border-white/10 bg-gray-950 text-white',
-                        formButtonPrimary: 'bg-teal-500 hover:bg-teal-400',
-                        profileSection: 'border-white/10',
-                        profileSectionContent: 'text-white',
-                        accordionTriggerButton: 'text-white/80 hover:bg-white/5',
+                        headerSubtitle: 'text-white/70',
+                        profileSection: 'border-white/10 text-white',
+                        profileSectionTitle: 'text-white',
+                        profileSectionContent: 'text-white/90',
+                        profileSectionPrimaryButton: 'text-teal-300 hover:text-teal-200',
+                        formFieldLabel: 'text-white/80',
+                        formFieldInput: 'border-white/10 bg-gray-950 text-white placeholder:text-white/40',
+                        formFieldHintText: 'text-white/60',
+                        formFieldWarningText: 'text-red-200',
+                        formButtonPrimary: 'bg-teal-500 text-white hover:bg-teal-400',
+                        accordionTriggerButton: 'text-white/90 hover:bg-white/5',
+                        accordionContent: 'bg-gray-900 text-white',
                         badge: 'bg-teal-500/15 text-teal-300',
+                        identityPreview: 'bg-white/5 text-white',
+                        identityPreviewText: 'text-white',
+                        identityPreviewEditButton: 'text-teal-300 hover:text-teal-200',
+                        userPreview: 'text-white',
+                        userPreviewMainIdentifier: 'text-white',
+                        userPreviewSecondaryIdentifier: 'text-white/65',
+                        menuButton: 'text-white/80 hover:bg-white/10 hover:text-white',
+                        menuItem: 'text-white/80 hover:bg-white/10 hover:text-white',
+                        footerActionText: 'text-white/60',
+                        footerActionLink: 'text-teal-300 hover:text-teal-200',
+                        dividerLine: 'bg-white/10',
+                        avatarBox: 'border border-white/10',
                       },
                     }}
                   />

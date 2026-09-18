@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { ClerkProvider } from "@clerk/react";
 import App from "./App.jsx";
-import { WatchlistProvider } from "./context/WatchlistContext.jsx";
+import { HistoryProvider, WatchlistProvider } from "./context/WatchlistContext.jsx";
 import "./index.css";
 
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -21,7 +21,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       signUpFallbackRedirectUrl="/"
     >
       <WatchlistProvider>
-        <App />
+        <HistoryProvider>
+          <App />
+        </HistoryProvider>
       </WatchlistProvider>
     </ClerkProvider>
   </React.StrictMode>

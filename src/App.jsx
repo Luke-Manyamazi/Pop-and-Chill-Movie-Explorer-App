@@ -10,6 +10,7 @@ import TVDetails from '../src/components/TVDetails';
 import EpisodeDetails from '../src/components/EpisodeDetails';
 import ActorDetails from '../src/components/ActorDetails';
 import Watchlist from '../src/components/Watchlist';
+import WatchHistory from '../src/components/WatchHistory';
 import ErrorBoundary from '../src/components/ErrorBoundary';
 import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
@@ -572,6 +573,7 @@ export default function App() {
           <Route path="/tv/:id/season/:season/episode/:episode" element={<EpisodeDetails />} />
           <Route path="/actor/:id" element={<ActorDetails />} />
           <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/history" element={<WatchHistory />} />
         </Routes>
       </ErrorBoundary>
     </Router>

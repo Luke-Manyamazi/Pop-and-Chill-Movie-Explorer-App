@@ -44,7 +44,11 @@ export default function Nav({ activeCategory }) {
             <button type="button" onClick={() => navigate('/watchlist')} className="whitespace-nowrap rounded-full bg-teal-500/15 px-3 py-2 text-xs font-semibold text-teal-200 transition hover:bg-teal-500/25 hover:text-white sm:px-4 sm:text-sm">
               ♥ My List
             </button>
-            <UserButton appearance={{ elements: { avatarBox: 'h-9 w-9' } }} />
+            <UserButton
+              userProfileMode="navigation"
+              userProfileUrl="/account"
+              appearance={{ elements: { avatarBox: 'h-9 w-9' } }}
+            />
           </Show>
         </div>
       </div>

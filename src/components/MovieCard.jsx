@@ -35,7 +35,7 @@ export default function MovieCard({ item, onTrailer }) {
         <button type="button" onClick={openDetails} className="block w-full truncate text-left font-semibold hover:text-teal-300" title={title}>{title}</button>
         <div className="mt-1 flex items-center justify-between text-sm text-neutral-400">
           <span>{year || '—'}</span>
-          {!isActor && <button type="button" onClick={() => onTrailer(item)} className="font-semibold text-teal-300 hover:text-teal-200">▶ Trailer</button>}
+          {!isActor && onTrailer && <button type="button" onClick={() => onTrailer(item)} className="font-semibold text-teal-300 hover:text-teal-200">▶ Trailer</button>}
         </div>
       </div>
     </article>

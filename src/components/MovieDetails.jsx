@@ -13,6 +13,7 @@ import Nav from "./Nav";
 import WatchlistButton from "./WatchlistButton";
 import WatchProviders from "./WatchProviders";
 import RecommendedRow from "./RecommendedRow";
+import { useHistory } from "../context/WatchlistContext";
 
 export default function MovieDetails() {
   const { id } = useParams();
@@ -22,6 +23,7 @@ export default function MovieDetails() {
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [youTubeKey, setYouTubeKey] = useState(null);
+  const { add: addHistory } = useHistory();
 
   useEffect(() => {
     async function fetchData() {
@@ -30,6 +32,7 @@ export default function MovieDetails() {
         const details = await getMovieDetails(id);
         if (!details.title) throw new Error("Not a movie");
         setMovie(details);
+        addHistory({ ...details, media_type: "movie" });
         const credits = await getCredits("movie", id);
         setCast(credits.cast || []);
       } catch {

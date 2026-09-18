@@ -350,7 +350,7 @@ function AppMain() {
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
             <div className="mb-10 space-y-10">
-              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} showArrows />
+              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => loadTrending('all')} showArrows />
               <ContentRow title="🎬 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
               <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'popularity.desc' })} />
               <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'vote_average.desc', 'vote_count.gte': 200 })} />

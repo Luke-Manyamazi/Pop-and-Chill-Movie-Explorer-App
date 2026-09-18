@@ -44,6 +44,9 @@ export default function Nav({ activeCategory }) {
             <button type="button" onClick={() => navigate('/watchlist')} className="whitespace-nowrap rounded-full bg-teal-500/15 px-3 py-2 text-xs font-semibold text-teal-200 transition hover:bg-teal-500/25 hover:text-white sm:px-4 sm:text-sm">
               ♥ My List
             </button>
+            <button type="button" onClick={() => navigate('/history')} className="whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white sm:px-4 sm:text-sm">
+              🕘 History
+            </button>
             <UserButton
               userProfileMode="navigation"
               userProfileUrl="/account"

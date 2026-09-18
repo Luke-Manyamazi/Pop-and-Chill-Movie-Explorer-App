@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { getTrending, getPopular, getTopRated, getUpcomingMovies, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
+import { getTrending, getPopular, getTopRated, getUpcomingMovies, getRandomPopular, searchMulti, getDiscover, getVideos, pickYouTubeTrailer } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
 import TrailerModal from '../src/components/TrailerModal';
 import MovieDetails from '../src/components/MovieDetails';
@@ -49,6 +49,7 @@ function AppMain() {
   const [youTubeKey, setYouTubeKey] = useState(null);
   const [homeRows, setHomeRows] = useState({ popularMovies: [], popularTV: [], topMovies: [], topTV: [], upcoming: [] });
   const [searchType, setSearchType] = useState('all');
+  const [surpriseLoading, setSurpriseLoading] = useState(false);
 
   const gridRef = useRef(null);
   const hasQuery = useMemo(() => query.trim().length > 0, [query]);
@@ -168,6 +169,20 @@ function AppMain() {
     runSearch(1);
   };
 
+  const surpriseMe = async () => {
+    setSurpriseLoading(true);
+    setError('');
+    try {
+      const item = await getRandomPopular();
+      if (!item) throw new Error('No surprise title was available.');
+      navigate(item.media_type === 'tv' ? '/tv/' + item.id : '/movie/' + item.id);
+    } catch (e) {
+      setError(e.message || 'Could not find a surprise title. Try again.');
+    } finally {
+      setSurpriseLoading(false);
+    }
+  };
+
   const openTrailer = async (item) => {
     const media = item.media_type || (item.title ? 'movie' : 'tv');
     try {
@@ -244,6 +259,14 @@ function AppMain() {
               ))}
               <button
                 type="button"
+                onClick={surpriseMe}
+                disabled={surpriseLoading}
+                className="rounded-full border border-teal-300/30 bg-teal-400/10 px-4 py-2 text-sm font-semibold text-teal-200 hover:bg-teal-400/20 disabled:cursor-wait disabled:opacity-60 transition"
+              >
+                {surpriseLoading ? '🎲 Finding...' : '🎲 Surprise Me'}
+              </button>
+              <button
+                type="button"
                 onClick={() => navigate('/watchlist')}
                 className="rounded-full border border-white/15 bg-black/20 px-4 py-2 text-sm text-white/80 hover:border-teal-400/50 hover:text-teal-300 transition"
               >
@@ -277,23 +300,43 @@ function AppMain() {
           )}
 
           {hasQuery && activeCategory === 'search' && (
-            <div className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-teal-300">Search results</p>
+                  <h3 className="text-lg font-bold">Results for “{query.trim()}”</h3>
+                </div>
+                <button type="button" onClick={() => { setQuery(''); setSearchType('all'); loadTrending('all'); }} className="rounded-lg px-3 py-2 text-xs font-semibold text-white/60 hover:bg-white/10 hover:text-white">Clear search</button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
               {[['all', 'All'], ['movie', 'Movies'], ['tv', 'TV Shows'], ['person', 'Actors']].map(([value, label]) => (
                 <button key={value} type="button" onClick={() => setSearchType(value)} className={\`rounded-xl px-4 py-2 text-sm font-semibold transition \${searchType === value ? 'bg-teal-500 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}\`}>
                   {label}
                 </button>
               ))}
-              <span className="ml-auto px-3 text-xs text-white/40">{visibleItems.length} shown</span>
+                <span className="ml-auto px-3 text-xs text-white/40">{visibleItems.length} shown</span>
+              </div>
             </div>
           )}
 
-          {/* Display error */}
-          {error && <p className="text-center py-4 text-red-500">{error}</p>}
+          {error && (
+            <div role="alert" className="mx-auto mb-6 max-w-2xl rounded-2xl border border-red-400/20 bg-red-400/10 p-5 text-center">
+              <p className="font-semibold text-red-200">Something went wrong</p>
+              <p className="mt-1 text-sm text-red-200/70">{error}</p>
+              <button type="button" onClick={() => activeCategory === 'search' ? runSearch(page) : discoverParams ? loadDiscover(activeCategory, discoverParams, page) : loadTrending(activeCategory, page)} className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20">Try again</button>
+            </div>
+          )}
 
           {loading && page === 1 ? (
             <SkeletonGrid />
-          ) : items.length === 0 ? (
-            <p className="text-center py-12 text-white/70">No results found.</p>
+          ) : !loading && activeCategory === 'search' && hasQuery && visibleItems.length === 0 ? (
+            <div className="mx-auto max-w-xl py-16 text-center">
+              <div className="text-5xl">🔎</div>
+              <h3 className="mt-4 text-xl font-bold">No matches found</h3>
+              <p className="mt-2 text-sm text-white/50">Try a different title, actor, or search category.</p>
+            </div>
+          ) : !loading && items.length === 0 ? (
+            <div className="py-16 text-center text-white/60"><div className="text-4xl">🍿</div><p className="mt-3">Nothing to show yet. Try another discovery option.</p></div>
           ) : (
             <>
               <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">

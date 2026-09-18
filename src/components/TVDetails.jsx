@@ -6,6 +6,7 @@ import {
   getVideos,
   pickYouTubeTrailer,
   img342,
+  img780,
   getTVCredits,
 } from "../api/tmdb";
 import TrailerModal from "./TrailerModal";
@@ -107,13 +108,13 @@ export default function TVDetails() {
       <Nav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col md:flex-row gap-10">
-          <img
-            src={img342(tv.poster_path)}
-            alt={tv.name}
-            className="w-full md:w-80 rounded-2xl shadow-2xl object-cover self-start"
-          />
+          <div className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 md:w-80">
+            {tv.backdrop_path && <img src={img780(tv.backdrop_path)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20 blur-sm" />}
+            <img src={img342(tv.poster_path)} alt={tv.name} className="relative mx-auto w-full object-cover shadow-2xl" />
+            <div className="absolute left-3 top-3"><span className="rounded-full bg-black/70 px-3 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur">TV Series</span></div>
+          </div>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold mb-2">{tv.name}</h1>
+            <h1 className="text-4xl font-black tracking-tight mb-3 sm:text-5xl">{tv.name}</h1>
             <div className="flex items-center gap-4 text-teal-400 mb-6">
               <span>{tv.first_air_date?.slice(0, 4)}</span>
               <span>•</span>
@@ -122,7 +123,7 @@ export default function TVDetails() {
                 ★ {tv.vote_average?.toFixed(1)}
               </span>
             </div>
-            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
+            <div className="mb-6 flex flex-wrap gap-2">{tv.genres?.map(g => <span key={g.id} className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold text-teal-200">{g.name}</span>)}</div>\n            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
               {tv.overview || "No overview available."}
             </p>
             <div className="flex items-center gap-3">
@@ -164,14 +165,14 @@ export default function TVDetails() {
                 <div
                   key={ep.id}
                   onClick={() => navigate(`/tv/${id}/season/${selectedSeason}/episode/${ep.episode_number}`)}
-                  className="bg-neutral-800/50 rounded-xl overflow-hidden border border-white/5 hover:border-teal-500/50 transition-colors cursor-pointer"
+                  className="group bg-neutral-800/50 rounded-2xl overflow-hidden border border-white/5 hover:border-teal-500/50 transition-colors cursor-pointer"
                 >
                   <div className="aspect-video relative bg-neutral-800">
                     {ep.still_path ? (
                       <img
                         src={img342(ep.still_path)}
                         alt={ep.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="grid place-items-center h-full text-xs text-neutral-500">

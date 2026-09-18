@@ -47,7 +47,7 @@ function AppMain() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [youTubeKey, setYouTubeKey] = useState(null);
-  const [homeRows, setHomeRows] = useState({ popularMovies: [], popularTV: [], topMovies: [], topTV: [], upcoming: [] });
+  const [homeRows, setHomeRows] = useState({ trending: [], popularMovies: [], popularTV: [], topMovies: [], topTV: [], upcoming: [] });
   const [searchType, setSearchType] = useState('all');
   const [surpriseLoading, setSurpriseLoading] = useState(false);
 
@@ -124,7 +124,8 @@ function AppMain() {
 
     const loadHomeRows = async () => {
       try {
-        const [popularMovies, popularTV, topMovies, topTV, upcoming] = await Promise.all([
+        const [trending, popularMovies, popularTV, topMovies, topTV, upcoming] = await Promise.all([
+          getTrending('all', 'week'),
           getPopular('movie'),
           getPopular('tv'),
           getTopRated('movie'),
@@ -133,12 +134,14 @@ function AppMain() {
         ]);
 
         if (!cancelled) {
+          const unique = (results = []) => Array.from(new Map(results.filter(item => item?.poster_path).map(item => [item.id + '-' + (item.media_type || item.title || item.name), item])).values()).slice(0, 10);
           setHomeRows({
-            popularMovies: popularMovies.results || [],
-            popularTV: popularTV.results || [],
-            topMovies: topMovies.results || [],
-            topTV: topTV.results || [],
-            upcoming: upcoming.results || [],
+            trending: unique(trending.results),
+            popularMovies: unique(popularMovies.results),
+            popularTV: unique(popularTV.results),
+            topMovies: unique(topMovies.results),
+            topTV: unique(topTV.results),
+            upcoming: unique(upcoming.results),
           });
         }
       } catch {
@@ -291,7 +294,8 @@ function AppMain() {
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
             <div className="mb-10 space-y-10">
-              <ContentRow title="🔥 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
+              <ContentRow title="🔥 Trending This Week" items={homeRows.trending} onTrailer={openTrailer} onExplore={() => loadTrending('all')} />
+              <ContentRow title="🎬 Popular Movies" items={homeRows.popularMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'popularity.desc' })} />
               <ContentRow title="📺 Popular TV Shows" items={homeRows.popularTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'popularity.desc' })} />
               <ContentRow title="⭐ Top Rated Movies" items={homeRows.topMovies} onTrailer={openTrailer} onExplore={() => explore('movie', { sort_by: 'vote_average.desc', 'vote_count.gte': 200 })} />
               <ContentRow title="🏆 Top Rated TV Shows" items={homeRows.topTV} onTrailer={openTrailer} onExplore={() => explore('tv', { sort_by: 'vote_average.desc', 'vote_count.gte': 100 })} />

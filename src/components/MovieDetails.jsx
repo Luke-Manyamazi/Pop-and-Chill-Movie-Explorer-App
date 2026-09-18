@@ -6,6 +6,7 @@ import {
   getVideos,
   pickYouTubeTrailer,
   img342,
+  img780,
 } from "../api/tmdb";
 import TrailerModal from "./TrailerModal";
 import Nav from "./Nav";
@@ -81,13 +82,13 @@ export default function MovieDetails() {
       <Nav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col md:flex-row gap-10">
-          <img
-            src={img342(movie.poster_path)}
-            alt={movie.title}
-            className="w-full md:w-80 rounded-2xl shadow-2xl object-cover self-start"
-          />
+          <div className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 md:w-80">
+            {movie.backdrop_path && <img src={img780(movie.backdrop_path)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20 blur-sm" />}
+            <img src={img342(movie.poster_path)} alt={movie.title} className="relative mx-auto w-full object-cover shadow-2xl" />
+            <div className="absolute left-3 top-3"><span className="rounded-full bg-black/70 px-3 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur">Movie</span></div>
+          </div>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold mb-2">{movie.title}</h1>
+            <h1 className="text-4xl font-black tracking-tight mb-3 sm:text-5xl">{movie.title}</h1>
             <div className="flex items-center gap-4 text-teal-400 mb-6">
               <span>{movie.release_date?.slice(0, 4)}</span>
               <span>•</span>
@@ -96,7 +97,7 @@ export default function MovieDetails() {
                 ★ {movie.vote_average?.toFixed(1)}
               </span>
             </div>
-            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
+            <div className="mb-6 flex flex-wrap gap-2">{movie.genres?.map(g => <span key={g.id} className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs font-semibold text-teal-200">{g.name}</span>)}</div>\n            <p className="text-lg text-neutral-300 leading-relaxed mb-8">
               {movie.overview}
             </p>
             <div className="flex items-center gap-3">

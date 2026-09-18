@@ -201,14 +201,30 @@ function AppMain() {
     }
   };
 
-  const loadMore = () => {
-    const nextPage = page + 1;
-    const previousHeight = gridRef.current?.scrollHeight || 0;
-    const callback = () => window.scrollTo({ top: previousHeight, behavior: 'smooth' });
+  const scrollToNewResults = (firstNewIndex) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const firstNewCard = gridRef.current?.querySelector(`[data-grid-index="${firstNewIndex}"]`);
+        firstNewCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  };
 
-    if (activeCategory === 'search') runSearch(nextPage, true).then(callback);
-    else if (discoverParams) loadDiscover(activeCategory, discoverParams, nextPage, true).then(callback);
-    else loadTrending(activeCategory, nextPage, true).then(callback);
+  const loadMore = async () => {
+    if (loading) return;
+
+    const nextPage = page + 1;
+    const firstNewIndex = visibleItems.length;
+
+    try {
+      if (activeCategory === 'search') await runSearch(nextPage, true);
+      else if (discoverParams) await loadDiscover(activeCategory, discoverParams, nextPage, true);
+      else await loadTrending(activeCategory, nextPage, true);
+
+      scrollToNewResults(firstNewIndex);
+    } catch {
+      // Individual loaders already expose the error state.
+    }
   };
 
   return (
@@ -344,7 +360,11 @@ function AppMain() {
           ) : (
             <>
               <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                {visibleItems.map((item, index) => <MovieCard key={`${item.media_type || 'item'}-${item.id}-${index}`} item={item} onTrailer={openTrailer} />)}
+                {visibleItems.map((item, index) => (
+                  <div key={`${item.media_type || 'item'}-${item.id}-${index}`} data-grid-index={index}>
+                    <MovieCard item={item} onTrailer={openTrailer} />
+                  </div>
+                ))}
               </div>
 
               {/* Load More */}

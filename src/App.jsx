@@ -253,10 +253,13 @@ function AppMain() {
 
   useEffect(() => {
     if (!location.state?.category) return;
-    loadTrending(location.state.category).then(() => {
+    const loadCategory = location.state.category === 'person'
+      ? loadActors(1)
+      : loadTrending(location.state.category);
+    loadCategory.then(() => {
       navigate('/', { replace: true, state: null });
     });
-  }, [location.state, loadTrending, navigate]);
+  }, [location.state, loadTrending, loadActors, navigate]);
 
   // Auto-search as the user types, paused while they're mid-keystroke
   useEffect(() => {
@@ -372,7 +375,7 @@ function AppMain() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <Nav />
+      <Nav activeCategory={activeCategory} />
 
       {/* Hero */}
       <section
@@ -456,6 +459,8 @@ function AppMain() {
                 };
                 setActorFilters(nextFilters);
                 setPage(1);
+                setLoading(true);
+                setError('');
                 Promise.all([1, 2, 3, 4, 5].map(actorPage => getPopular('person', actorPage)))
                   .then(pages => {
                     const combined = pages.flatMap(data => data.results || []);
@@ -465,7 +470,8 @@ function AppMain() {
                     setDiscoverParams(null);
                     setHeroBackground(getRandomBackdrop(unique));
                   })
-                  .catch(e => setError(String(e.message || e)));
+                  .catch(e => setError(String(e.message || e)))
+                  .finally(() => setLoading(false));
               } else {
                 loadDiscover(activeCategory, params, 1);
               }

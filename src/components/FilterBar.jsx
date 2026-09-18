@@ -118,10 +118,10 @@ export default function FilterBar({ media, onApply, onClear, active }) {
             <option value={media === 'person' ? 'known_for_date.desc' : media === 'movie' ? 'primary_release_date.desc' : 'first_air_date.desc'} className="bg-gray-900">Newest</option>
             <option value="vote_count.desc" className="bg-gray-900">Most Voted</option>
           </select>
-          <button type="button" onClick={apply} className="btn btn-primary px-5">Apply</button>
-          {(active || activeCount > 0) && <button type="button" onClick={clear} className="btn">Reset</button>}
           </>
           )}
+          <button type="button" onClick={apply} className="btn btn-primary px-5">Apply</button>
+          {(active || activeCount > 0) && <button type="button" onClick={clear} className="btn">Reset</button>}
         </div>
       </div>
     </section>

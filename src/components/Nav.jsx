@@ -49,7 +49,7 @@ export default function Nav({ activeCategory }) {
             </SignUpButton>
           </SignedOut>
           <SignedIn>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </SignedIn>
         </div>
       </div>

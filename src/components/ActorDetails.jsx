@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getPersonDetails, getPersonCombinedCredits, img342 } from '../api/tmdb';
 import MovieCard from './MovieCard';
 import Nav from './Nav';
+import LoadingState from './LoadingState';
+import ErrorState from './ErrorState';
 
 function formatBiography(text) {
   if (!text) return ['No biography available.'];
@@ -67,16 +69,7 @@ export default function ActorDetails() {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <Nav />
-        <div className="mx-auto max-w-7xl px-4 py-16">
-          <div className="animate-pulse grid gap-8 md:grid-cols-[280px_1fr]">
-            <div className="aspect-[2/3] rounded-3xl bg-neutral-800" />
-            <div className="space-y-4 pt-4">
-              <div className="h-10 w-2/3 rounded bg-neutral-800" />
-              <div className="h-4 w-1/3 rounded bg-neutral-800" />
-              <div className="h-24 rounded bg-neutral-800" />
-            </div>
-          </div>
-        </div>
+        <LoadingState title="Loading the actor..." message="Fetching their profile and filmography." />
       </div>
     );
   }
@@ -85,12 +78,11 @@ export default function ActorDetails() {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <Nav />
-        <div className="mx-auto max-w-xl px-4 py-20 text-center">
-          <div className="text-5xl">🎭</div>
-          <h1 className="mt-4 text-2xl font-bold">We couldn't load this profile</h1>
-          <p className="mt-2 text-white/50">{error}</p>
-          <button type="button" onClick={() => window.location.reload()} className="mt-6 rounded-xl bg-teal-500 px-5 py-3 font-semibold hover:bg-teal-400">Try again</button>
-        </div>
+        <ErrorState
+          title="We couldn't load this profile"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }

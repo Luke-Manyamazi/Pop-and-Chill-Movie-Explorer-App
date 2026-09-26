@@ -20,7 +20,7 @@ export default function MovieCard({ item, onTrailer }) {
   return (
     <article className="group relative overflow-hidden rounded-2xl bg-neutral-900 shadow-soft ring-1 ring-white/10 transition duration-300 hover:-translate-y-1 hover:ring-teal-400/40">
       <div className="relative aspect-[2/3] overflow-hidden bg-neutral-800 cursor-pointer" onClick={openDetails}>
-        {img ? <img src={img} alt={title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-110" /> : <div className="grid h-full place-items-center text-neutral-500">No Image</div>}
+        {img ? <img src={img} alt={title} loading="lazy" decoding="async" width="342" height="513" className="h-full w-full object-cover transition duration-500 group-hover:scale-110" /> : <div className="grid h-full place-items-center text-neutral-500">No Image</div>}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-80" />
         <div className="absolute left-3 top-3 flex gap-2">
           <span className="rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur">{mediaLabel}</span>

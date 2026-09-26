@@ -8,6 +8,8 @@ import {
   img780,
 } from '../api/tmdb';
 import Nav from './Nav';
+import LoadingState from './LoadingState';
+import ErrorState from './ErrorState';
 
 export default function EpisodeDetails() {
   const { id, season, episode } = useParams();
@@ -45,15 +47,21 @@ export default function EpisodeDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 grid place-items-center">
-        <span className="loader" />
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Nav />
+        <LoadingState title="Loading the episode..." message="Fetching the episode, season and show details." />
       </div>
     );
   }
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-center py-20 text-red-500">
-        {error}
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Nav />
+        <ErrorState
+          title="This episode isn't ready for showtime"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }

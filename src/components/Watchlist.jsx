@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import Nav from './Nav';
+import LoadingState from './LoadingState';
+import ErrorState from './ErrorState';
 import MovieCard from './MovieCard';
 import TrailerModal from './TrailerModal';
 import { useWatchlist } from '../context/WatchlistContext';
 import { getVideos, pickYouTubeTrailer } from '../api/tmdb';
 
 export default function Watchlist() {
-  const { items } = useWatchlist();
+  const { items, syncing, error } = useWatchlist();
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('added');
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,7 +54,11 @@ export default function Watchlist() {
           {items.length > 0 && <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">{items.length} {items.length === 1 ? 'title' : 'titles'} saved</div>}
         </header>
 
-        {items.length === 0 ? (
+        {syncing ? (
+          <LoadingState title="Loading your list..." message="Checking your saved movies and TV shows." />
+        ) : error ? (
+          <ErrorState title="We couldn't load your list" message={error} onRetry={() => window.location.reload()} />
+        ) : items.length === 0 ? (
           <section className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-16 text-center">
             <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full bg-teal-500/10 text-3xl">🍿</div>
             <h2 className="text-2xl font-bold">Your list is empty</h2>

@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import SignInPage from './pages/SignIn.jsx';
 import SignUpPage from './pages/SignUp.jsx';
-import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { getTrending, getPopular, getTopRated, getUpcomingMovies, getRandomPopular, searchMulti, getDiscover, getVideos, pickYouTubeTrailer, getPersonDetails } from './api/tmdb';
 import MovieCard from '../src/components/MovieCard';
 import TrailerModal from '../src/components/TrailerModal';
-import MovieDetails from '../src/components/MovieDetails';
-import TVDetails from '../src/components/TVDetails';
-import EpisodeDetails from '../src/components/EpisodeDetails';
-import ActorDetails from '../src/components/ActorDetails';
-import Watchlist from '../src/components/Watchlist';
-import WatchHistory from '../src/components/WatchHistory';
+const MovieDetails = lazy(() => import('./components/MovieDetails.jsx'));
+const TVDetails = lazy(() => import('./components/TVDetails.jsx'));
+const EpisodeDetails = lazy(() => import('./components/EpisodeDetails.jsx'));
+const ActorDetails = lazy(() => import('./components/ActorDetails.jsx'));
+const Watchlist = lazy(() => import('./components/Watchlist.jsx'));
+const WatchHistory = lazy(() => import('./components/WatchHistory.jsx'));
 import ErrorBoundary from '../src/components/ErrorBoundary';
 import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
@@ -213,39 +213,60 @@ function AppMain() {
   }, [getRandomBackdrop]);
 
   useEffect(() => {
-    if (!location.state?.category) loadTrending();
+    if (location.state?.category) return;
+
+    // Load only the critical homepage feed immediately. Secondary rows wait until
+    // the first paint so they cannot compete with the hero/LCP for network time.
     let cancelled = false;
+    const run = () => {
+      const loadSecondaryRows = async () => {
+        try {
+          const [popularMovies, popularTV, topMovies, topTV, upcoming] = await Promise.all([
+            getPopular('movie'),
+            getPopular('tv'),
+            getTopRated('movie'),
+            getTopRated('tv'),
+            getUpcomingMovies(),
+          ]);
 
-    const loadHomeRows = async () => {
-      try {
-        const [trending, popularMovies, popularTV, topMovies, topTV, upcoming] = await Promise.all([
-          getTrending('all', 'week'),
-          getPopular('movie'),
-          getPopular('tv'),
-          getTopRated('movie'),
-          getTopRated('tv'),
-          getUpcomingMovies(),
-        ]);
+          if (!cancelled) {
+            const unique = (results = []) =>
+              Array.from(
+                new Map(
+                  results
+                    .filter(item => item?.poster_path)
+                    .map(item => [item.id + '-' + (item.media_type || item.title || item.name), item])
+                ).values()
+              ).slice(0, 10);
 
-        if (!cancelled) {
-          const unique = (results = []) => Array.from(new Map(results.filter(item => item?.poster_path).map(item => [item.id + '-' + (item.media_type || item.title || item.name), item])).values()).slice(0, 10);
-          setHomeRows({
-            trending: unique(trending.results),
-            popularMovies: unique(popularMovies.results),
-            popularTV: unique(popularTV.results),
-            topMovies: unique(topMovies.results),
-            topTV: unique(topTV.results),
-            upcoming: unique(upcoming.results),
-          });
+            setHomeRows(prev => ({
+              ...prev,
+              popularMovies: unique(popularMovies.results),
+              popularTV: unique(popularTV.results),
+              topMovies: unique(topMovies.results),
+              topTV: unique(topTV.results),
+              upcoming: unique(upcoming.results),
+            }));
+          }
+        } catch {
+          // Secondary rows are optional; the primary feed remains usable.
         }
-      } catch {
-        // The main trending feed remains usable if a secondary homepage row fails.
+      };
+
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(loadSecondaryRows, { timeout: 2500 });
+      } else {
+        window.setTimeout(loadSecondaryRows, 1200);
       }
     };
 
-    loadHomeRows();
-    return () => { cancelled = true; };
-  }, [loadTrending]);
+    // Give React/browser a chance to paint the primary feed first.
+    const timer = window.setTimeout(run, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [location.state]);
 
   useEffect(() => {
     if (!location.state?.category) return;
@@ -503,7 +524,8 @@ export default function App() {
   return (
     <Router>
       <ErrorBoundary>
-        <Routes>
+        <Suspense fallback={<div className="min-h-screen bg-gray-900 text-white"><LoadingState /></div>}>
+          <Routes>
           <Route path="/" element={<AppMain />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
@@ -585,7 +607,8 @@ export default function App() {
           <Route path="/watchlist" element={<Watchlist />} />
           <Route path="/history" element={<WatchHistory />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </ErrorBoundary>
     </Router>
   );

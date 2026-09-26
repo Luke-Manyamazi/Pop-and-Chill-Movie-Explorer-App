@@ -94,9 +94,16 @@ export function WatchlistProvider({ children }) {
       }
     }
 
-    // Account data is not needed for the public homepage. Wait until the page
-    // has loaded and the browser has had time to render before syncing.
+    // The public homepage does not need account data during its first paint.
+    // Other routes keep the original eager behaviour so account pages remain responsive.
+    const isPublicHome = window.location.pathname === '/';
     let timer;
+
+    if (!isPublicHome) {
+      sync();
+      return () => { cancelled = true; };
+    }
+
     const startSync = () => {
       if (document.readyState === 'complete') {
         timer = window.setTimeout(sync, 5000);
@@ -108,32 +115,20 @@ export function WatchlistProvider({ children }) {
       window.addEventListener('load', onLoad, { once: true });
       timer = { onLoad };
     };
+
     startSync();
+
     if (timer?.onLoad) {
       return () => {
         cancelled = true;
         window.removeEventListener('load', timer.onLoad);
       };
     }
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-    /*
-    if (typeof window.requestIdleCallback === 'function') {
-      const idleId = window.requestIdleCallback(sync, { timeout: 2500 });
-      return () => {
-        cancelled = true;
-        window.cancelIdleCallback?.(idleId);
-      };
-    }
 
-    timer = window.setTimeout(sync, 1500);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-    */
   }, [isLoaded, isSignedIn, getToken]);
 
   async function toggle(item) {
@@ -198,9 +193,16 @@ export function HistoryProvider({ children }) {
         .finally(() => { if (!cancelled) setLoading(false); });
     };
 
-    // History is only needed for the History page, so keep it completely out
-    // of the initial homepage request chain.
+    // History is only needed for the History page. Keep it out of the public
+    // homepage request chain, but load it immediately when the user is already there.
+    const isHistoryPage = window.location.pathname === '/history';
     let timer;
+
+    if (isHistoryPage) {
+      loadHistory();
+      return () => { cancelled = true; };
+    }
+
     const startHistoryLoad = () => {
       if (document.readyState === 'complete') {
         timer = window.setTimeout(loadHistory, 6000);
@@ -212,32 +214,20 @@ export function HistoryProvider({ children }) {
       window.addEventListener('load', onLoad, { once: true });
       timer = { onLoad };
     };
+
     startHistoryLoad();
+
     if (timer?.onLoad) {
       return () => {
         cancelled = true;
         window.removeEventListener('load', timer.onLoad);
       };
     }
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-    /*
-    if (typeof window.requestIdleCallback === 'function') {
-      const idleId = window.requestIdleCallback(loadHistory, { timeout: 3000 });
-      return () => {
-        cancelled = true;
-        window.cancelIdleCallback?.(idleId);
-      };
-    }
 
-    timer = window.setTimeout(loadHistory, 1800);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-    */
   }, [isLoaded, isSignedIn, getToken]);
 
   async function add(item) {

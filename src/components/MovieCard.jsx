@@ -18,7 +18,6 @@ export default function MovieCard({ item, onTrailer }) {
 
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-neutral-900/60 shadow-soft w-full">
-      {/* Image */}
       <div
         className="w-full aspect-[2/3] bg-neutral-800 cursor-pointer"
         onClick={openDetails}
@@ -27,7 +26,11 @@ export default function MovieCard({ item, onTrailer }) {
         {img ? (
           <img
             src={img}
-            alt={title}
+            alt={title || 'Movie or TV poster'}
+            loading="lazy"
+            decoding="async"
+            width="342"
+            height="513"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (
@@ -35,7 +38,6 @@ export default function MovieCard({ item, onTrailer }) {
         )}
       </div>
 
-      {/* Content */}
       <div className="p-3 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h4
@@ -53,7 +55,6 @@ export default function MovieCard({ item, onTrailer }) {
         </div>
         <div className="text-sm text-neutral-400">{year ?? '—'}</div>
 
-        {/* Watch Trailer only for movies or TV shows */}
         {!isActor && (
           <button
             className="btn btn-primary mt-2 w-full"
@@ -64,7 +65,6 @@ export default function MovieCard({ item, onTrailer }) {
         )}
       </div>
 
-      {/* Hover gradient */}
       <div className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100 bg-gradient-to-t from-black/60 to-transparent"></div>
     </div>
   );

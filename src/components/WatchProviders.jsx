@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getWatchProviders, img342 } from '../api/tmdb';
 import LoadingState from './LoadingState';
+import LoadingState from './LoadingState';
 
 function detectRegion() {
   const locale = navigator.language || 'en-US';
@@ -32,6 +33,7 @@ export default function WatchProviders({ media, id }) {
   const [region, setRegion] = useState(null);
   const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {

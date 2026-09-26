@@ -16,9 +16,33 @@ async function get(path, params = {}) {
   const cached = cache.get(key);
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data;
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`TMDb ${res.status}`);
-  const data = await res.json();
+  let res;
+  try {
+    res = await fetch(url);
+  } catch (error) {
+    throw new Error('TMDb is taking a break right now. Please check your connection and try again.');
+  }
+
+  if (!res.ok) {
+    const statusMessages = {
+      400: 'TMDb did not understand that request.',
+      401: 'The TMDb connection needs attention.',
+      404: 'We could not find that title or person.',
+      429: 'TMDb is busy right now. Please wait a moment and try again.',
+      500: 'TMDb is having trouble behind the scenes.',
+      502: 'TMDb is temporarily unavailable.',
+      503: 'TMDb is temporarily unavailable.',
+    };
+
+    throw new Error(statusMessages[res.status] || 'TMDb could not complete that request. Please try again.');
+  }
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('TMDb returned an unexpected response. Please try again.');
+  }
   cache.set(key, { data, ts: Date.now() });
   return data;
 }

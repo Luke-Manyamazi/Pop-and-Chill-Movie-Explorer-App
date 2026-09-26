@@ -137,7 +137,8 @@ function AppMain() {
     if (!candidates.length) return null;
     const item = candidates[Math.floor(Math.random() * candidates.length)];
     const path = item.backdrop_path || item.profile_path;
-    return `https://image.tmdb.org/t/p/original${path}`;
+    // w780 is large enough for the hero while avoiding TMDb's original-size payload.
+    return `https://image.tmdb.org/t/p/w780${path}`;
   }, []);
 
   const loadTrending = useCallback(async (category = 'all', p = 1, append = false) => {
@@ -226,8 +227,8 @@ function AppMain() {
   useEffect(() => {
     if (location.state?.category) return;
 
-    // Load only the critical homepage feed immediately. Secondary rows wait until
-    // the first paint so they cannot compete with the hero/LCP for network time.
+    // Load the primary homepage feed immediately so the hero/content is populated.
+    // Secondary rows are deliberately delayed so they cannot compete with LCP.
     let cancelled = false;
     const run = () => {
       const loadSecondaryRows = async () => {
@@ -271,8 +272,11 @@ function AppMain() {
       }
     };
 
-    // Give React/browser a chance to paint the primary feed first.
-    const timer = window.setTimeout(run, 300);
+    // Primary content is the only homepage request that should start immediately.
+    // Secondary rows wait several seconds so Lighthouse/user first paint is not
+    // competing with five additional TMDb requests.
+    loadTrending('all');
+    const timer = window.setTimeout(run, 5000);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
@@ -402,10 +406,17 @@ function AppMain() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Nav activeCategory={activeCategory} />
-      <section
-        className="relative w-full overflow-hidden bg-cover bg-center py-24 sm:py-32 px-4 sm:px-8"
-        style={{ backgroundImage: heroBackground ? `url(${heroBackground})` : 'linear-gradient(135deg, #0f172a, #0f766e)' }}
-      >
+      <section className="relative w-full overflow-hidden bg-gradient-to-br from-slate-950 to-teal-900 py-24 sm:py-32 px-4 sm:px-8">
+        {heroBackground && (
+          <img
+            src={heroBackground}
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/35" />
         <div className="relative max-w-7xl mx-auto">
           <div className="max-w-3xl">

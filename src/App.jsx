@@ -13,8 +13,7 @@ const Watchlist = lazy(() => import('./components/Watchlist.jsx'));
 const WatchHistory = lazy(() => import('./components/WatchHistory.jsx'));
 import ErrorBoundary from '../src/components/ErrorBoundary';
 import Nav from '../src/components/Nav';
-import FilterBar from '../src/components/FilterBar';
-import { SkeletonGrid } from '../src/components/SkeletonCard';
+const FilterBar = lazy(() => import('./components/FilterBar.jsx'));
 import { UserProfile } from '@clerk/react';
 import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
@@ -33,7 +32,7 @@ function ContentRow({ title, items, onTrailer, onExplore, showArrows = false }) 
   };
 
   return (
-    <section>
+    <section className="[content-visibility:auto] [contain-intrinsic-size:320px]">
       <div className="flex items-center justify-between mb-4 gap-4">
         <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h3>
         <div className="flex items-center gap-2 shrink-0">
@@ -439,8 +438,9 @@ function AppMain() {
           </div>
         </div>
       </section>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {(activeCategory === 'movie' || activeCategory === 'tv' || activeCategory === 'person') && (
+          <Suspense fallback={null}>
           <FilterBar key={activeCategory} media={activeCategory} active={!!discoverParams} onApply={(params) => {
             if (activeCategory === 'person') {
               const nextFilters = { gender: params.gender || '', sort_by: params.sort_by || 'popularity.desc' };
@@ -473,6 +473,7 @@ function AppMain() {
               loadTrending(activeCategory);
             }
           }} />
+          </Suspense>
         )}
         <section className="py-10">
           {activeCategory === 'all' && !hasQuery && !discoverParams && (
@@ -533,7 +534,7 @@ function AppMain() {
             </>
           )}
         </section>
-      </div>
+      </main>
       <footer className="w-full bg-neutral-900/80 border-t border-white/10 mt-12 text-center text-sm text-neutral-400 py-4">
         <div className="flex flex-col items-center gap-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><span>© {new Date().getFullYear()} Pop & Chill Mate. All rights reserved.</span><span>Data provided by <a href="https://www.themoviedb.org/" className="underline hover:text-white" target="_blank" rel="noopener noreferrer">TMDb</a></span></div>
       </footer>

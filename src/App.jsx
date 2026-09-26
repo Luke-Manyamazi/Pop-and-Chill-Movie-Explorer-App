@@ -150,6 +150,17 @@ function AppMain() {
       setActiveCategory(category);
       if (!append) setDiscoverParams(null);
       if (!append) setHeroBackground(getRandomBackdrop(data.results));
+      if (!append && category === 'all') {
+        const unique = (results = []) =>
+          Array.from(
+            new Map(
+              results
+                .filter(item => item?.poster_path)
+                .map(item => [item.id + '-' + (item.media_type || item.title || item.name), item])
+            ).values()
+          ).slice(0, 10);
+        setHomeRows(prev => ({ ...prev, trending: unique(data.results) }));
+      }
       return data;
     } catch (e) {
       setError(String(e.message || e));

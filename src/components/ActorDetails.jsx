@@ -4,6 +4,24 @@ import { getPersonDetails, getPersonCombinedCredits, img342 } from '../api/tmdb'
 import MovieCard from './MovieCard';
 import Nav from './Nav';
 
+function formatBiography(text) {
+  if (!text) return ['No biography available.'];
+
+  const cleaned = text
+    .replace(/\s+/g, ' ')
+    .replace(/\s*Description above from the Wikipedia article.*$/i, '')
+    .trim();
+
+  const sentences = cleaned.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [cleaned];
+  const paragraphs = [];
+
+  for (let i = 0; i < sentences.length; i += 3) {
+    paragraphs.push(sentences.slice(i, i + 3).join(' ').trim());
+  }
+
+  return paragraphs.filter(Boolean);
+}
+
 export default function ActorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -62,6 +80,7 @@ export default function ActorDetails() {
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
@@ -76,42 +95,94 @@ export default function ActorDetails() {
     );
   }
 
+  const biographyParagraphs = formatBiography(person.biography);
+
   return (
     <div className="min-h-screen bg-gray-900 text-white pb-20">
       <Nav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <button type="button" onClick={() => navigate('/', { state: { category: 'person' } })} className="mb-6 text-sm font-semibold text-white/60 hover:text-white">← Back</button>
-        <div className="flex flex-col md:flex-row gap-10 rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-6 sm:p-8">
-          <div className="w-full md:w-64 shrink-0">
-            {person.profile_path ? (
-              <img src={img342(person.profile_path)} alt={person.name} className="w-full rounded-2xl shadow-2xl object-cover" />
-            ) : (
-              <div className="aspect-[2/3] grid place-items-center rounded-2xl bg-neutral-800 text-neutral-500">No Photo</div>
-            )}
-          </div>
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold mb-2">{person.name}</h1>
-            <div className="flex items-center gap-4 text-teal-400 mb-6 flex-wrap text-sm">
-              {person.birthday && <span>Born {person.birthday}</span>}
-              {person.place_of_birth && <span>• {person.place_of_birth}</span>}
-              {person.known_for_department && <span>• {person.known_for_department}</span>}
+        <button
+          type="button"
+          onClick={() => navigate('/', { state: { category: 'person' } })}
+          className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-teal-400/40 hover:bg-white/10 hover:text-white"
+        >
+          ← Back to actors
+        </button>
+
+        <div className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.07] via-white/[0.03] to-transparent shadow-2xl">
+          <div className="flex flex-col md:flex-row gap-8 p-6 sm:p-8 lg:p-10">
+            <div className="w-full md:w-64 lg:w-72 shrink-0">
+              {person.profile_path ? (
+                <img
+                  src={img342(person.profile_path)}
+                  alt={person.name}
+                  className="w-full rounded-2xl object-cover shadow-2xl"
+                />
+              ) : (
+                <div className="aspect-[2/3] grid place-items-center rounded-2xl bg-neutral-800 text-neutral-500">
+                  No Photo
+                </div>
+              )}
             </div>
-            <div className="mb-6 flex flex-wrap gap-2 text-xs">
-              {person.known_for_department && <span className="rounded-full bg-teal-400/10 px-3 py-1 font-semibold text-teal-200">{person.known_for_department}</span>}
-              {person.popularity && <span className="rounded-full bg-white/10 px-3 py-1 text-white/60">Popularity {person.popularity.toFixed(1)}</span>}
+
+            <div className="min-w-0 flex-1">
+              <div className="mb-6">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">
+                  Actor profile
+                </p>
+                <h1 className="text-4xl font-black tracking-tight sm:text-5xl">{person.name}</h1>
+              </div>
+
+              <div className="mb-6 grid gap-3 text-sm sm:grid-cols-3">
+                {person.birthday && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/40">Born</p>
+                    <p className="mt-1 font-semibold text-white">{person.birthday}</p>
+                  </div>
+                )}
+                {person.place_of_birth && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:col-span-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/40">Place of birth</p>
+                    <p className="mt-1 font-semibold text-white">{person.place_of_birth}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-8 flex flex-wrap gap-3">
+                {person.known_for_department && (
+                  <span className="inline-flex items-center rounded-full bg-teal-500/15 px-4 py-2 text-sm font-semibold text-teal-200 ring-1 ring-inset ring-teal-400/20">
+                    {person.known_for_department}
+                  </span>
+                )}
+                {person.popularity != null && (
+                  <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white/70">
+                    Popularity {person.popularity.toFixed(1)}
+                  </span>
+                )}
+              </div>
+
+              <div className="max-w-4xl">
+                <h2 className="mb-4 text-xl font-bold">About {person.name}</h2>
+                <div className="space-y-5 text-[15px] leading-8 text-neutral-300 sm:text-base">
+                  {biographyParagraphs.map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))}
+                </div>
+              </div>
             </div>
-            <p className="max-w-3xl text-base text-neutral-300 leading-relaxed">
-              {person.biography || 'No biography available.'}
-            </p>
           </div>
         </div>
 
         {knownFor.length > 0 && (
           <section className="mt-16">
-            <h2 className="text-2xl font-bold mb-6 border-l-4 border-teal-500 pl-4">
-              Known For
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">Filmography</p>
+                <h2 className="mt-1 text-2xl font-bold sm:text-3xl">Known For</h2>
+              </div>
+              <span className="text-sm text-white/40">{knownFor.length} titles</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {knownFor.map(item => (
                 <MovieCard key={`${item.media_type}-${item.id}`} item={item} />
               ))}

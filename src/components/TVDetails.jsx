@@ -49,8 +49,8 @@ export default function TVDetails() {
           const seasonData = await getTVEpisodes(id, firstSeason.season_number);
           setEpisodes(seasonData.episodes || []);
         }
-      } catch {
-        setError("Could not load TV details. This might be a movie ID.");
+      } catch (e) {
+        setError(e.message || "Could not load TV details. This might be a movie ID.");
       } finally {
         setLoading(false);
       }

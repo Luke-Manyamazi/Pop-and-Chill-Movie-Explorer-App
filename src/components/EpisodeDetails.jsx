@@ -35,8 +35,8 @@ export default function EpisodeDetails() {
         setEp(epDetails);
         setSeasonEpisodes(seasonData.episodes || []);
         setShow(showDetails);
-      } catch {
-        if (!cancelled) setError('Could not load this episode.');
+      } catch (e) {
+        if (!cancelled) setError(e.message || 'Could not load this episode.');
       } finally {
         if (!cancelled) setLoading(false);
       }

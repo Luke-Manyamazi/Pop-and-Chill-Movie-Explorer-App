@@ -94,8 +94,22 @@ export function WatchlistProvider({ children }) {
       }
     }
 
-    sync();
-    return () => { cancelled = true; };
+    // Account sync is intentionally deferred so authenticated data cannot block
+    // the public movie homepage's first render/LCP.
+    let timer;
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(sync, { timeout: 2500 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    timer = window.setTimeout(sync, 1500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [isLoaded, isSignedIn, getToken]);
 
   async function toggle(item) {
@@ -147,17 +161,35 @@ export function HistoryProvider({ children }) {
     }
 
     let cancelled = false;
-    setLoading(true);
     setError('');
-    accountRequest(getToken, 'history')
-      .then(data => { if (!cancelled) setItems(data.map(cleanItem)); })
-      .catch(error => {
-        console.error('History load failed:', error);
-        if (!cancelled) setError(error.message || 'Could not load your history.');
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
 
-    return () => { cancelled = true; };
+    const loadHistory = () => {
+      setLoading(true);
+      accountRequest(getToken, 'history')
+        .then(data => { if (!cancelled) setItems(data.map(cleanItem)); })
+        .catch(error => {
+          console.error('History load failed:', error);
+          if (!cancelled) setError(error.message || 'Could not load your history.');
+        })
+        .finally(() => { if (!cancelled) setLoading(false); });
+    };
+
+    // History is only needed for the History page, so keep it out of the
+    // initial critical request chain.
+    let timer;
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(loadHistory, { timeout: 3000 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    timer = window.setTimeout(loadHistory, 1800);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [isLoaded, isSignedIn, getToken]);
 
   async function add(item) {

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "test": "node --test "tests/**/*.test.js"",
+    "test": "node --test tests/tmdb.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

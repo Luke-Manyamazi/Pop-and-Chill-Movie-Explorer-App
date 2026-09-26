@@ -50,7 +50,37 @@ export default function Nav({ activeCategory }) {
             <UserButton
               userProfileMode="navigation"
               userProfileUrl="/account"
-              appearance={{ elements: { avatarBox: 'h-9 w-9' } }}
+              appearance={{
+                variables: {
+                  colorBackground: '#111827',
+                  colorText: '#ffffff',
+                  colorTextSecondary: '#cbd5e1',
+                  colorPrimary: '#14b8a6',
+                  colorNeutral: '#ffffff',
+                  borderRadius: '1rem',
+                },
+                elements: {
+                  avatarBox: 'h-9 w-9',
+                  userButtonPopoverCard:
+                    'bg-gray-950/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden',
+                  userButtonPopoverMain:
+                    'bg-gray-950/95',
+                  userButtonPopoverActionButton:
+                    'rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-colors',
+                  userButtonPopoverActionButtonText:
+                    'text-sm font-medium',
+                  userButtonPopoverActionButtonIcon:
+                    'text-teal-300',
+                  userButtonPopoverFooter:
+                    'border-t border-white/10 bg-white/[0.02]',
+                  userPreview:
+                    'border-b border-white/10',
+                  userPreviewMainIdentifier:
+                    'text-white font-semibold',
+                  userPreviewSecondaryIdentifier:
+                    'text-slate-400',
+                },
+              }}
             />
           </Show>
         </div>

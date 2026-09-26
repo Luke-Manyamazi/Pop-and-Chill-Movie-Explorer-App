@@ -51,18 +51,23 @@ async function accountRequest(getToken, resource, options = {}) {
 export function WatchlistProvider({ children }) {
   const { isSignedIn, isLoaded, getToken } = useAuth();
   const [items, setItems] = useState([]);
+  const [syncing, setSyncing] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
       setItems([]);
+      setSyncing(false);
       return;
     }
 
     let cancelled = false;
     async function sync() {
       try {
+        setSyncing(true);
+        setError('');
         const remote = await accountRequest(getToken, 'watchlist');
         const local = readStored().map(cleanItem);
         const merged = [...remote.map(cleanItem)];
@@ -83,6 +88,9 @@ export function WatchlistProvider({ children }) {
         }
       } catch (error) {
         console.error('Watchlist sync failed:', error);
+        if (!cancelled) setError(error.message || 'Could not sync your list.');
+      } finally {
+        if (!cancelled) setSyncing(false);
       }
     }
 
@@ -118,7 +126,7 @@ export function WatchlistProvider({ children }) {
   }
 
   return (
-    <WatchlistContext.Provider value={{ items, isSaved, toggle }}>
+    <WatchlistContext.Provider value={{ items, isSaved, toggle, syncing, error }}>
       {children}
     </WatchlistContext.Provider>
   );
@@ -127,17 +135,27 @@ export function WatchlistProvider({ children }) {
 export function HistoryProvider({ children }) {
   const { isSignedIn, isLoaded, getToken } = useAuth();
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
       setItems([]);
+      setLoading(false);
       return;
     }
 
     let cancelled = false;
+    setLoading(true);
+    setError('');
     accountRequest(getToken, 'history')
       .then(data => { if (!cancelled) setItems(data.map(cleanItem)); })
-      .catch(error => console.error('History load failed:', error));
+      .catch(error => {
+        console.error('History load failed:', error);
+        if (!cancelled) setError(error.message || 'Could not load your history.');
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
   }, [isLoaded, isSignedIn, getToken]);
@@ -190,7 +208,7 @@ export function HistoryProvider({ children }) {
   }
 
   return (
-    <HistoryContext.Provider value={{ items, add, remove, clear }}>
+    <HistoryContext.Provider value={{ items, add, remove, clear, loading, error }}>
       {children}
     </HistoryContext.Provider>
   );

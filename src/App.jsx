@@ -16,6 +16,9 @@ import Nav from '../src/components/Nav';
 import FilterBar from '../src/components/FilterBar';
 import { SkeletonGrid } from '../src/components/SkeletonCard';
 import { UserProfile } from '@clerk/react';
+import LoadingState from './components/LoadingState';
+import ErrorState from './components/ErrorState';
+import NotFound from './components/NotFound';
 
 function ContentRow({ title, items, onTrailer, onExplore, showArrows = false }) {
   const rowRef = useRef(null);
@@ -462,12 +465,19 @@ function AppMain() {
             </div>
           )}
           {error && (
-            <div role="alert" className="mx-auto mb-6 max-w-2xl rounded-2xl border border-red-400/20 bg-red-400/10 p-5 text-center">
-              <p className="font-semibold text-red-200">Something went wrong</p><p className="mt-1 text-sm text-red-200/70">{error}</p>
-              <button type="button" onClick={() => activeCategory === 'search' ? runSearch(page) : discoverParams ? loadDiscover(activeCategory, discoverParams, page) : loadTrending(activeCategory, page)} className="mt-4 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20">Try again</button>
-            </div>
+            <ErrorState
+              compact
+              title="Pop & Chill hit a small plot twist"
+              message={error}
+              onRetry={() => activeCategory === 'search' ? runSearch(page) : discoverParams ? loadDiscover(activeCategory, discoverParams, page) : loadTrending(activeCategory, page)}
+            />
           )}
-          {loading && page === 1 ? <SkeletonGrid /> : !loading && activeCategory === 'search' && hasQuery && visibleItems.length === 0 ? (
+          {loading && page === 1 ? (
+            <LoadingState
+              title={activeCategory === 'search' ? 'Searching the Pop & Chill library...' : activeCategory === 'person' ? 'Finding the people behind the stories...' : 'Loading your movie night...'}
+              message="The popcorn is ready. We’re fetching fresh results from TMDb."
+            />
+          ) : !loading && activeCategory === 'search' && hasQuery && visibleItems.length === 0 ? (
             <div className="mx-auto max-w-xl py-16 text-center"><div className="text-5xl">🔎</div><h3 className="mt-4 text-xl font-bold">No matches found</h3><p className="mt-2 text-sm text-white/50">Try a different title, actor, or search category.</p></div>
           ) : !loading && items.length === 0 ? (
             <div className="py-16 text-center text-white/60"><div className="text-4xl">🍿</div><p className="mt-3">Nothing to show yet. Try another discovery option.</p></div>
@@ -574,6 +584,7 @@ export default function App() {
           <Route path="/actor/:id" element={<ActorDetails />} />
           <Route path="/watchlist" element={<Watchlist />} />
           <Route path="/history" element={<WatchHistory />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </ErrorBoundary>
     </Router>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getWatchProviders, img342 } from '../api/tmdb';
+import LoadingState from './LoadingState';
 
 function detectRegion() {
   const locale = navigator.language || 'en-US';
@@ -31,12 +32,14 @@ export default function WatchProviders({ media, id }) {
   const [region, setRegion] = useState(null);
   const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
     async function fetchData() {
       setLoading(true);
       try {
+        setError('');
         const data = await getWatchProviders(media, id);
         const detected = detectRegion();
         const entry = data.results?.[detected] || data.results?.US || null;
@@ -44,8 +47,11 @@ export default function WatchProviders({ media, id }) {
           setRegion(entry);
           setLink(entry?.link || null);
         }
-      } catch {
-        if (!cancelled) setRegion(null);
+      } catch (e) {
+        if (!cancelled) {
+          setRegion(null);
+          setError(e.message || 'Where to Watch is temporarily unavailable.');
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -54,14 +60,20 @@ export default function WatchProviders({ media, id }) {
     return () => { cancelled = true; };
   }, [media, id]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="mt-6 max-w-sm">
+      <LoadingState title="Checking where to watch..." message="Finding streaming, rental and purchase options." />
+    </div>
+  );
 
   const hasAny = region && (region.flatrate?.length || region.rent?.length || region.buy?.length);
 
   return (
     <div className="mt-6">
       <h3 className="text-sm font-semibold text-neutral-400 mb-3">Where to Watch</h3>
-      {!hasAny ? (
+      {error ? (
+        <p className="text-sm text-white/45">{error}</p>
+      ) : !hasAny ? (
         <p className="text-sm text-neutral-500">Not currently available to stream in your region.</p>
       ) : (
         <div className="flex flex-col gap-4">

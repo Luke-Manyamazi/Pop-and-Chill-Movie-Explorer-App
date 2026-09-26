@@ -38,8 +38,8 @@ export default function MovieDetails() {
         addHistory({ ...details, media_type: "movie" });
         const credits = await getCredits("movie", id);
         setCast(credits.cast || []);
-      } catch {
-        setError("Details not found. Check if this is a TV show.");
+      } catch (e) {
+        setError(e.message || "Details not found. Check if this is a TV show.");
       } finally {
         setLoading(false);
       }

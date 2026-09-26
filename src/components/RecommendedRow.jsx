@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { getRecommendations, getSimilar } from '../api/tmdb';
 import MovieCard from './MovieCard';
 import LoadingState from './LoadingState';
+import LoadingState from './LoadingState';
 
 export default function RecommendedRow({ media, id, onTrailer }) {
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -46,11 +49,15 @@ export default function RecommendedRow({ media, id, onTrailer }) {
       {error ? (
         <p className="text-sm text-white/45">{error}</p>
       ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {items.map(item => (
-          <MovieCard key={item.id} item={item} onTrailer={onTrailer} />
-        ))}
-      </div>
+      {error ? (
+        <p className="text-sm text-white/45">{error}</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {items.map(item => (
+            <MovieCard key={item.id} item={item} onTrailer={onTrailer} />
+          ))}
+        </div>
+      )}
       )}
     </section>
   );

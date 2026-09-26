@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from './Nav';
+import LoadingState from './LoadingState';
+import ErrorState from './ErrorState';
 import MovieCard from './MovieCard';
 import TrailerModal from './TrailerModal';
 import { useHistory } from '../context/WatchlistContext';
 import { getVideos, pickYouTubeTrailer } from '../api/tmdb';
 
 export default function WatchHistory() {
-  const { items, remove, clear } = useHistory();
+  const { items, remove, clear, loading, error } = useHistory();
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [modalOpen, setModalOpen] = useState(false);
@@ -40,7 +42,7 @@ export default function WatchHistory() {
             <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Watch History</h1>
             <p className="mt-2 text-white/55">Titles you recently opened on Pop & Chill.</p>
           </div>
-          {items.length > 0 && (
+          {loading ? null : items.length > 0 && (
             <button type="button" onClick={clear} className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-400/20">
               Clear history
             </button>
@@ -57,7 +59,11 @@ export default function WatchHistory() {
           </div>
         )}
 
-        {visibleItems.length === 0 ? (
+        {loading ? (
+          <LoadingState title="Loading your history..." message="Fetching the titles you've recently explored." />
+        ) : error ? (
+          <ErrorState title="We couldn't load your history" message={error} onRetry={() => window.location.reload()} />
+        ) : visibleItems.length === 0 ? (
           <section className="rounded-3xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-16 text-center">
             <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full bg-teal-500/10 text-3xl">🕘</div>
             <h2 className="text-2xl font-bold">No history yet</h2>

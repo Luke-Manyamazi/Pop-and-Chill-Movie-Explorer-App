@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getWatchProviders, img342 } from '../api/tmdb';
 import LoadingState from './LoadingState';
-import LoadingState from './LoadingState';
 
 function detectRegion() {
   const locale = navigator.language || 'en-US';
@@ -11,17 +10,18 @@ function detectRegion() {
 
 function ProviderGroup({ label, providers }) {
   if (!providers?.length) return null;
+
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</p>
+      <p className="mb-2 text-xs uppercase tracking-wide text-neutral-500">{label}</p>
       <div className="flex flex-wrap gap-3">
-        {providers.map(p => (
+        {providers.map((p) => (
           <img
             key={p.provider_id}
             src={img342(p.logo_path)}
             alt={p.provider_name}
             title={p.provider_name}
-            className="w-12 h-12 rounded-lg object-cover"
+            className="h-12 w-12 rounded-lg object-cover"
           />
         ))}
       </div>
@@ -34,17 +34,19 @@ export default function WatchProviders({ media, id }) {
   const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
+
     async function fetchData() {
       setLoading(true);
+
       try {
         setError('');
         const data = await getWatchProviders(media, id);
         const detected = detectRegion();
         const entry = data.results?.[detected] || data.results?.US || null;
+
         if (!cancelled) {
           setRegion(entry);
           setLink(entry?.link || null);
@@ -58,25 +60,39 @@ export default function WatchProviders({ media, id }) {
         if (!cancelled) setLoading(false);
       }
     }
+
     fetchData();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, [media, id]);
 
-  if (loading) return (
-    <div className="mt-6 max-w-sm">
-      <LoadingState title="Checking where to watch..." message="Finding streaming, rental and purchase options." />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="mt-6 max-w-sm">
+        <LoadingState
+          title="Checking where to watch..."
+          message="Finding streaming, rental and purchase options."
+        />
+      </div>
+    );
+  }
 
-  const hasAny = region && (region.flatrate?.length || region.rent?.length || region.buy?.length);
+  const hasAny =
+    region &&
+    (region.flatrate?.length || region.rent?.length || region.buy?.length);
 
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-semibold text-neutral-400 mb-3">Where to Watch</h3>
+      <h3 className="mb-3 text-sm font-semibold text-neutral-400">Where to Watch</h3>
+
       {error ? (
         <p className="text-sm text-white/45">{error}</p>
       ) : !hasAny ? (
-        <p className="text-sm text-neutral-500">Not currently available to stream in your region.</p>
+        <p className="text-sm text-neutral-500">
+          Not currently available to stream in your region.
+        </p>
       ) : (
         <div className="flex flex-col gap-4">
           <ProviderGroup label="Stream" providers={region.flatrate} />
@@ -84,12 +100,13 @@ export default function WatchProviders({ media, id }) {
           <ProviderGroup label="Buy" providers={region.buy} />
         </div>
       )}
+
       {link && (
         <a
           href={link}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-neutral-500 hover:text-teal-400 underline inline-block mt-3"
+          className="mt-3 inline-block text-xs text-neutral-500 underline hover:text-teal-400"
         >
           Data provided by JustWatch
         </a>

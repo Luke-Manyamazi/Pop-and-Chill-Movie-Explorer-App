@@ -11,6 +11,8 @@ import {
 } from "../api/tmdb";
 import TrailerModal from "./TrailerModal";
 import Nav from "./Nav";
+import LoadingState from "./LoadingState";
+import ErrorState from "./ErrorState";
 import WatchlistButton from "./WatchlistButton";
 import WatchProviders from "./WatchProviders";
 import RecommendedRow from "./RecommendedRow";
@@ -94,14 +96,20 @@ export default function TVDetails() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gray-900 grid place-items-center">
-        <span className="loader" />
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Nav />
+        <LoadingState title="Loading the show..." message="Fetching episodes, cast and show details. This may take a moment." />
       </div>
     );
   if (error)
     return (
-      <div className="min-h-screen bg-gray-900 text-center py-20 text-red-500">
-        {error}
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Nav />
+        <ErrorState
+          title="We couldn't load this show"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
 

@@ -10,6 +10,8 @@ import {
 } from "../api/tmdb";
 import TrailerModal from "./TrailerModal";
 import Nav from "./Nav";
+import LoadingState from "./LoadingState";
+import ErrorState from "./ErrorState";
 import WatchlistButton from "./WatchlistButton";
 import WatchProviders from "./WatchProviders";
 import RecommendedRow from "./RecommendedRow";
@@ -70,14 +72,20 @@ export default function MovieDetails() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gray-900 grid place-items-center">
-        <span className="loader" />
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Nav />
+        <LoadingState title="Loading the movie..." message="Fetching the cast, details and everything you need for movie night." />
       </div>
     );
   if (error)
     return (
-      <div className="min-h-screen bg-gray-900 text-center py-20 text-red-500">
-        {error}
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Nav />
+        <ErrorState
+          title="We couldn't load this movie"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
 

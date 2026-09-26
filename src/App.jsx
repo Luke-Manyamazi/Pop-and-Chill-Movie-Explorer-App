@@ -30,10 +30,12 @@ function AppMain() {
   const gridRef = useRef(null);
   const hasQuery = useMemo(() => query.trim().length > 0, [query]);
 
+  // Use a medium-sized backdrop rather than the full-resolution original.
+  // The hero is decorative; a 780px image is sufficient for its display size.
   const getRandomBackdrop = useCallback((results) => {
     if (!results || results.length === 0) return null;
     const itemWithBackdrop = results.find(r => r.backdrop_path) || results[0];
-    return itemWithBackdrop ? `https://image.tmdb.org/t/p/original${itemWithBackdrop.backdrop_path}` : null;
+    return itemWithBackdrop ? `https://image.tmdb.org/t/p/w780${itemWithBackdrop.backdrop_path}` : null;
   }, []);
 
   const loadTrending = useCallback(async (category = 'all', p = 1, append = false) => {
@@ -147,6 +149,7 @@ function AppMain() {
           <p className="text-lg sm:text-2xl text-white/90 mb-6">Millions of movies, TV shows and people to discover.</p>
           <form onSubmit={onSubmit} className="flex flex-col sm:flex-row max-w-xl mx-auto gap-3">
             <input
+              aria-label="Search movies, TV shows, and people"
               className="flex-1 rounded-lg px-4 py-2 bg-white text-black placeholder-black/50 focus:outline-none w-full sm:w-auto"
               placeholder="Search movies, TV shows, people..."
               value={query}
@@ -169,8 +172,7 @@ function AppMain() {
           />
         )}
         <section className="py-10">
-          {/* Display error */}
-          {error && <p className="text-center py-4 text-red-500">{error}</p>}
+          {error && <p role="alert" className="text-center py-4 text-red-500">{error}</p>}
 
           {loading && page === 1 ? (
             <SkeletonGrid />
@@ -181,10 +183,8 @@ function AppMain() {
               <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {items.map(item => <MovieCard key={item.id} item={item} onTrailer={openTrailer} />)}
               </div>
-
-              {/* Load More */}
               <div className="mt-8 px-4 sm:px-0">
-                <button onClick={loadMore} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg font-semibold">
+                <button onClick={loadMore} disabled={loading} className="w-full px-6 py-3 bg-teal-500 hover:bg-teal-600 disabled:opacity-60 rounded-lg font-semibold">
                   {loading ? 'Loading...' : 'Load More'}
                 </button>
               </div>
@@ -193,7 +193,6 @@ function AppMain() {
         </section>
       </div>
 
-      {/* Footer */}
       <footer className="w-full bg-neutral-900/80 border-t border-white/10 mt-12 text-center text-sm text-neutral-400 py-4">
         <div className="flex flex-col items-center gap-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span>© {new Date().getFullYear()} Pop & Chill Mate. All rights reserved.</span>
@@ -201,7 +200,6 @@ function AppMain() {
         </div>
       </footer>
 
-      {/* Trailer Modal */}
       <TrailerModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

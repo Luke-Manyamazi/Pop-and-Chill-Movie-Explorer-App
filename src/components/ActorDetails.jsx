@@ -55,8 +55,8 @@ export default function ActorDetails() {
           .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
           .slice(0, 18);
         setKnownFor(sorted);
-      } catch {
-        if (!cancelled) setError('Could not load this person.');
+      } catch (e) {
+        if (!cancelled) setError(e.message || 'Could not load this person.');
       } finally {
         if (!cancelled) setLoading(false);
       }

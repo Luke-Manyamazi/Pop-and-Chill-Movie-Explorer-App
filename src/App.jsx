@@ -137,7 +137,7 @@ function AppMain() {
     if (!candidates.length) return null;
     const item = candidates[Math.floor(Math.random() * candidates.length)];
     const path = item.backdrop_path || item.profile_path;
-    return `https://image.tmdb.org/t/p/original${path}`;
+    return `https://image.tmdb.org/t/p/w780${path}`;
   }, []);
 
   const loadTrending = useCallback(async (category = 'all', p = 1, append = false) => {

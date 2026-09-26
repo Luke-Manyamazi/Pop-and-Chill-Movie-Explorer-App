@@ -94,9 +94,32 @@ export function WatchlistProvider({ children }) {
       }
     }
 
-    // Account sync is intentionally deferred so authenticated data cannot block
-    // the public movie homepage's first render/LCP.
+    // Account data is not needed for the public homepage. Wait until the page
+    // has loaded and the browser has had time to render before syncing.
     let timer;
+    const startSync = () => {
+      if (document.readyState === 'complete') {
+        timer = window.setTimeout(sync, 5000);
+        return;
+      }
+      const onLoad = () => {
+        timer = window.setTimeout(sync, 5000);
+      };
+      window.addEventListener('load', onLoad, { once: true });
+      timer = { onLoad };
+    };
+    startSync();
+    if (timer?.onLoad) {
+      return () => {
+        cancelled = true;
+        window.removeEventListener('load', timer.onLoad);
+      };
+    }
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    /*
     if (typeof window.requestIdleCallback === 'function') {
       const idleId = window.requestIdleCallback(sync, { timeout: 2500 });
       return () => {
@@ -110,6 +133,7 @@ export function WatchlistProvider({ children }) {
       cancelled = true;
       window.clearTimeout(timer);
     };
+    */
   }, [isLoaded, isSignedIn, getToken]);
 
   async function toggle(item) {
@@ -174,9 +198,32 @@ export function HistoryProvider({ children }) {
         .finally(() => { if (!cancelled) setLoading(false); });
     };
 
-    // History is only needed for the History page, so keep it out of the
-    // initial critical request chain.
+    // History is only needed for the History page, so keep it completely out
+    // of the initial homepage request chain.
     let timer;
+    const startHistoryLoad = () => {
+      if (document.readyState === 'complete') {
+        timer = window.setTimeout(loadHistory, 6000);
+        return;
+      }
+      const onLoad = () => {
+        timer = window.setTimeout(loadHistory, 6000);
+      };
+      window.addEventListener('load', onLoad, { once: true });
+      timer = { onLoad };
+    };
+    startHistoryLoad();
+    if (timer?.onLoad) {
+      return () => {
+        cancelled = true;
+        window.removeEventListener('load', timer.onLoad);
+      };
+    }
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    /*
     if (typeof window.requestIdleCallback === 'function') {
       const idleId = window.requestIdleCallback(loadHistory, { timeout: 3000 });
       return () => {
@@ -190,6 +237,7 @@ export function HistoryProvider({ children }) {
       cancelled = true;
       window.clearTimeout(timer);
     };
+    */
   }, [isLoaded, isSignedIn, getToken]);
 
   async function add(item) {
